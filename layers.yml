@@ -1,0 +1,33 @@
+# Symbology YAML for maps, could be made into a larger YAML for all slide data
+air:
+  title: 'Concentrations of PM2.5 particles in 2019'
+  subtitle: 'Micrograms per cubic meter (µg/m<sup>3</sup>)'
+  palette: ['#fff4d1', '#9467ab']
+  breaks: [5,10,15,20,30,40,50,100]
+  center: NULL
+solar:
+  title: 'Photovoltatic Potential'
+  min: sol_min
+  max: sol_max
+  bins: 3
+  palette: ['#ffebcc', '#f07605']
+  basemap: 'satellite'
+heat:
+  palette: 'Spectral'
+  domain: 'minmax'
+  title: 'Summer surface temperature<br>2017–2021'
+  label_format: '°C'
+fu: # This will require pre-processing
+  palette: '#446589'
+  labels: ['0.1–1%', '1–10%', '>10%']
+  alphas: [.25, .5, .75] 
+  title: 'Fluvial flood probability</br>in any given year'
+wsf:
+  labels: ['Before 1986', '1986-1995', '1996-2005', '2006-2015']
+  palette: ['#FBF9CD', '#E3B854', '#BF4A3B', '#25110B']
+  title: "Year of urban expansion"
+population:
+  title: 'Population density'
+  subtitle: 'Number of persons per 10,000 m^2'
+  palette: ['#ECEB72', '#8E3933']
+  basemap: 'satellite'

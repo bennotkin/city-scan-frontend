@@ -1,0 +1,217 @@
+---
+title: "Gagarin City Scan Test"
+format:
+  html:
+    theme: [custom-scroll.scss, none]
+slide-level: 3
+editor: visual
+execute:
+  echo: false
+---
+
+```{r}
+#| include = FALSE
+# Read functions & packages
+# Only the github version of leaflet supports terra, in place of raster, which is now required as sp (on which raster depends) is being deprecated
+devtools::install_github('rstudio/leaflet')
+source("fns.R")
+
+# City parameters
+city_params <- read_yaml("city_inputs.yml")
+# cities <- list.files("cities")
+city <- city_params$city_name
+city_string <- tolower(city) %>% stringr::str_replace_all(" ", "-")
+city_dir <- paste0("cities/", city_string, "/")
+output_dir <- paste0(city_dir, "styled-maps/")
+# raster_dir <- paste0(city_dir, "/output")
+country <- city_params$country
+
+# Visualization parameters
+basemap_opacity <- 0.3
+legend_opacity <- 0.8
+vwidth <- 900
+vheight <- vwidth
+
+# this is to enable fractional zoom in mapshot
+useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; InfoPath.2; SLCC1; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET CLR 2.0.50727) 3gpp-gba UNTRUSTED/1.0'
+
+# Layers
+layer_params <- read_yaml('layers.yml')
+```
+
+```{r, include=F}
+aoi <- st_read(paste0(city_dir, "AOI"))
+aoi_bounds <- st_bbox(aoi)
+```
+
+## 3 Population and Demographic Trends
+::: sidebar
+In the future this should be the section title, dynamically
+:::
+
+### Population Growth
+
+::: figure-column
+![](images/oxford-pop-growth.png)
+:::
+
+::: text-column
+-   From 2001 to 2011, the area's population grew from 10,060 to 10,391, at an average annual rate of just 0.3%
+-   The villages Varser, Ddmashen and Zovaber grew in this period, while the villages Gagarin, Geghamavan, Tsaghkunk shrunk
+
+Population figures are typically used as a denominator for many indicators, and are a measure of demand for services. The line chart above summarizes the city's population change according to census and other public data. High growth of urban populations, caused by rates of natural increase (more births than deaths) in urban areas, migration from rural to urban areas, and the transformation of rural settlements into urban places, puts pressure on cities to meet the new demand.
+:::
+
+### Population Density
+
+::: figure-column
+![](images/oxford-pop-density-scatter.png)
+:::
+
+::: text-column
+-   Of the six villages, Gagarin has the highest at 2,860 people per km<sup>2</sup>, while Tsaghkunk has the lowest at 1,057
+-   Together, the six villages have a density of 1,689 people per km<sup>2</sup>, which is denser than Areni and Yerevan (1,174 per km<sup>2</sup>) but less dense than Dilijan and Gyumri
+
+Density is calculated using the most recent census population recorded and the official land area occupied by the city, and is an important measure of how cities function. Higher population density enables governments to more easily deliver essential infrastructure and services in urban areas at relatively low cost per capita. However, such benefits do not materialize automatically or inevitably. Whether a city's population dynamics pose challenges or offer opportunities typically depends on the policies in play.
+:::
+
+::: footnote
+Populations and areas are from CityPopulation.de. Note that the extents used by CityPopulation.de may differ from the AOIs used by the City Scans. The area for Gagarin (Combined) uses the combined areas of each of the six included villages; it does not include the space in between.
+:::
+
+### Population Distribution by Age & Sex
+
+::: figure-column
+![](images/world-pop-age-sex.png)
+:::
+
+::: text-column
+-   The largest age group in the area is people ages 25--34
+-   For males, another large age group is ages 0--14
+-   90% of the population is younger than 60
+-   68% of the population is of working age (15--64)
+-   7% of the population is under 5 and 13% is youth (15--24)
+-   Men and women are evenly represented: there are 101 men to every - 100 women
+-   51% of all women in Gagarin are of reproductive age
+
+This column chart classifies the city's population according to age group, forming the basis of population projections. Populations vary significantly in their proportions of young and old people, with growing populations generally appearing younger, and declining or slowly growing populations generally appearing older.
+:::
+
+::: footnote
+Data from WorldPop. Bondarenko, et al, Estimates of total number of people per grid square broken down by gender and age groupings for 51 countries across sub-Saharan Africa in 2020 using Ecopia.AI and Maxar Technologies building footprints, 2020.
+
+Reproductive age is defined as 15--49. Working age is defined as 15--64.
+:::
+
+### Population Density
+
+::: figure-column
+```{r}
+# Read population data
+pop <- fuzzy_read(city_dir, "population")
+
+# Plot population map
+pop %>% mapify(yaml_key = "population")
+```
+:::
+
+::: text-column
+-   Population density is greatest in the western towns of Gagarin
+
+-   It is lowest ...
+
+This map estimates population numbers per 10,000 m<sup>2</sup> grid cell. It provides a more consistent representation of population distributions across different landscapes than administrative unit counts. Knowing where people are is critical for impact assessments and intervention plans, especially those focused on service delivery, food security, climate change, network systems and natural disasters.
+:::
+
+::: footnote
+Map data from WorldPop. Bondarenko, et al, Census/projection-disaggregated gridded population datasets, 2020.
+:::
+
+### Third level heading (###) creates new slide
+
+::: figure-column
+```{r}
+# Read file
+solar <- fuzzy_read(city_dir, fuzzy_string = "solar")
+
+# Plot map
+solar %>% mapify(yaml_key = "solar")
+```
+:::
+
+::: text-column
+A new slide will require new methodology text. Add this here in the second column. Columns can be added in RStudio using the Insert menu, or via markdown in any text editor.
+:::
+
+::: footnote
+Add any footnotes to this separate div with class `.footnote`.
+:::
+
+### Relative Wealth Index
+
+::: figure-column
+```{r}
+ rwi <- st_read(paste0(city_dir, "output/relative_wealth_index"), quiet = T) %>%
+   select(values = rwi, long = longitude, lat = latitude)
+
+ # rwi_range <- max(c(abs(min(rwi$values)), max(rwi$values))) %>% {c(-., 0, .)}
+ 
+ rwi_color_scale <- colorNumeric(
+  palette = colorRamp(c('#ED431B', '#FF9169', '#FFFFBA', '#70C5AD', '#009E7A'), interpolate = 'linear'),
+  domain = NULL,
+  na.color = 'transparent')
+ 
+ map_dynamic <-
+    leaflet(
+      data = aoi,
+      options = leafletOptions(zoomControl = F, zoomSnap = 0.1)) %>% 
+    fitBounds(lng1 = unname(aoi_bounds$xmin - (aoi_bounds$xmax - aoi_bounds$xmin)/20),
+              lat1 = unname(aoi_bounds$ymin - (aoi_bounds$ymax - aoi_bounds$ymin)/20),
+              lng2 = unname(aoi_bounds$xmax + (aoi_bounds$xmax - aoi_bounds$xmin)/20),
+              lat2 = unname(aoi_bounds$ymax + (aoi_bounds$ymax - aoi_bounds$ymin)/20)) %>%
+    addProviderTiles(., providers$Esri.WorldImagery,
+                       options = providerTileOptions(opacity = basemap_opacity)) %>%
+    addPolygons(data = rwi, fillColor = ~rwi_color_scale(values), fillOpacity = 1, stroke = F) %>%
+  addPolygons(color = 'black', weight = 3, fill = F, dashArray = '12')
+```
+:::
+
+::: text-column
+-   Wealth appears greatest in the villages of Gagarin and, secondarily, Ddmashen
+-   The lowest wealth areas are primarily areas with very low population density
+
+This map shows micro-estimates of wealth and poverty relative to the whole country that cover the populated surface at a 2.4 km2 resolution. Many critical policy decisions, from strategic investments to the allocation of humanitarian aid, rely on data about the geographic distribution of wealth and poverty.
+:::
+
+::: footnote
+Map data from Meta Data for Good.
+:::
+
+### Now with layers control
+
+::: figure-column
+```{r}
+pop %>% mapify(yaml_key = "population") %>%
+  addPolygons(data = rwi, fillColor = ~rwi_color_scale(values), fillOpacity = 1, stroke = F,
+              group = "RWI") %>%
+  addLayersControl(overlayGroups = c("RWI", "Population density"),
+                       options = layersControlOptions(collapsed = FALSE))
+
+add_rwi_layer <- function(map) {
+  map %>% addPolygons(data = rwi, fillColor = ~rwi_color_scale(values), fillOpacity = 1, stroke = F,
+              group = "RWI")
+}
+
+pop %>% mapify(yaml_key = "population") %>% add_rwi_layer()
+
+```
+:::
+
+::: text-column
+Add text
+:::
+
+::: footnote
+See https://rstudio.github.io/leaflet/showhide.html
+:::
+

@@ -1,0 +1,90 @@
+// Available sass variables from Bootstrap
+// $body-bg	The page background color.
+// $body-color	The page text color.
+// $link-color	The link color.
+// $input-bg	The background color for HTML inputs.
+// $popover-bg	The background color for popovers (for example, when a citation preview is shown).
+
+// $font-family-sans-serif	The sans-serif font family for the page.
+// $font-family-monospace	The monospace font family for the page.
+// $font-size-root	The base font size for the page.
+// $toc-font-size	The font size for the page TOC.
+// $h1-font-size Font sizes for the specified headings.
+// $h2-font-size
+// $h3-font-size
+// $h4-font-size
+// $h5-font-size
+
+/*-- scss:defaults --*/
+$presentation-font-size-root: 11pt;
+$bs-root-font-size: 16px;
+$pale-color: #5a6570;
+
+/*-- scss:rules --*/
+// Sets the page to full screen
+.page-columns main.content {
+  grid-column: screen-start-inset / screen-end-inset;
+}
+
+// Each section uses level2 headers, which are wrapped in sections
+.level2 {
+  display: grid;
+  grid-template-columns: auto 2em;
+  
+  .sidebar {
+    grid-column: 2 / 3;
+    grid-row-start: 2;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    background-color: coral;
+    writing-mode: vertical-lr;
+  }
+  
+  
+    
+}
+
+// A "slide" uses level3 headers, which are wrapped in sections
+.level3 {
+  grid-column: 1 / 2;
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  grid-template-rows: auto auto auto;
+  grid-column-gap: 2ch;
+  align-items: start;
+  min-height: 90vh;
+  padding-bottom: 5vh;
+  border-bottom: 2px;
+  margin-bottom: 5vh;
+  
+  h3  {
+    grid-column: 1 / 2;
+    grid-row-start: 1;
+    margin-top: 0;
+  }
+  
+  .figure-column {
+    grid-column: 2 / 3;
+    grid-row: 1 / 4;
+    position: sticky;
+    top: 0;
+    
+    img, .leaflet.html-widget {
+      height: 90vh !important;
+    }
+  }
+  
+  .text-column {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+  }
+  
+  div.footnote {
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
+    align-self: end;
+    font-size: 0.8rem;
+    color:  var($pale-color)
+  }
+}
