@@ -67,14 +67,16 @@ plot_basemap <- function(basemap_style = "satellite") {
     fitBounds(lng1 = unname(aoi_bounds$xmin - (aoi_bounds$xmax - aoi_bounds$xmin)/20),
               lat1 = unname(aoi_bounds$ymin - (aoi_bounds$ymax - aoi_bounds$ymin)/20),
               lng2 = unname(aoi_bounds$xmax + (aoi_bounds$xmax - aoi_bounds$xmin)/20),
-              lat2 = unname(aoi_bounds$ymax + (aoi_bounds$ymax - aoi_bounds$ymin)/20)) %>%
+              lat2 = unname(aoi_bounds$ymax + (aoi_bounds$ymax - aoi_bounds$ymin)/20))
+
     { if (basemap_style == "satellite") { 
-      addProviderTiles(., providers$Esri.WorldImagery,
+      basemap <- basemap %>% addProviderTiles(., providers$Esri.WorldImagery,
                        options = providerTileOptions(opacity = basemap_opacity))
     } else if (basemap_style == "vector") {
-      addProviderTiles(., providers$Wikimedia,
+      # addProviderTiles(., providers$Wikimedia,
+      basemap <- basemap %>% addProviderTiles(providers$CartoDB.Positron)
                        # addProviderTiles(., providers$Stadia.AlidadeSmooth,
-                       options = providerTileOptions(opacity = basemap_opacity))
+                      #  options = providerTileOptions(opacity = basemap_opacity))
     } }
   return(basemap)
 }
@@ -120,9 +122,7 @@ add_aoi <- function(map, data = aoi, color = 'black', weight = 3, fill = F, dash
   addPolygons(map, data = data, color = color, weight = weight, fill = fill, dashArray = dashArray, ...)
 }
 
-# Make dynamic (leaflet) map
-# Separate into functions
-mapify <- function(data,
+create_layer_function <- function(data,
                    yaml_key = NULL,
                    palette = NULL,
                    domain = NULL,
@@ -132,7 +132,6 @@ mapify <- function(data,
                    basemap = "vector",
                    message = F,
                    labFormat = NULL) {
-
   if (message) message("Check if data is in EPSG:3857; if not, raster is being re-projected")
 
   params <- layer_params[[yaml_key]] %>%
@@ -149,22 +148,23 @@ mapify <- function(data,
       center = params$center,
       bins = params$bins)
   }
-  
-  map_dynamic <-
-    plot_basemap(params$basemap) %>%
-    addRasterImage(data, opacity = 1,
-                   colors = color_scale,
-                   group = params$title) %>%
-    add_aoi() %>%
-    addScaleBar(position = 'bottomleft',
-                options = scaleBarOptions(maxWidth = 200)) %>%
-    # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
-    addLegend('topleft', pal = color_scale, values = c(min(values(data), na.rm = T), max(values(data), na.rm = T)), opacity = legend_opacity,
-              # bins = 3,  # legend color ramp does not render if there are too many bins
-              title = params$title,
-              labFormat = params$labFormat)
 
-  return(map_dynamic)
+  layer_id <- yaml_key
+
+  layer_function <- function(map) {
+      map %>% addRasterImage(data, opacity = 1,
+                    colors = color_scale,
+                    group = params$title,
+                    layerId = layer_id) %>%
+      # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
+      addLegend('bottomright', pal = color_scale, values = c(min(values(data), na.rm = T), max(values(data), na.rm = T)), opacity = legend_opacity,
+                # bins = 3,  # legend color ramp does not render if there are too many bins
+                title = params$title,
+                labFormat = params$labFormat,
+                group = params$title)
+  }
+
+  return(layer_function)
 }
 
 # Making the static map, given the dynamic map

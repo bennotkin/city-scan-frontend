@@ -24,67 +24,59 @@ $pale-color: #5a6570;
 // Sets the page to full screen
 .page-columns main.content {
   grid-column: screen-start-inset / screen-end-inset;
-}
-
-// Each section uses level2 headers, which are wrapped in sections
-.level2 {
   display: grid;
-  grid-template-columns: auto 2em;
-  
-  .sidebar {
-    grid-column: 2 / 3;
-    grid-row-start: 2;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    background-color: coral;
-    writing-mode: vertical-lr;
-  }
-  
-  
-    
-}
-
-// A "slide" uses level3 headers, which are wrapped in sections
-.level3 {
-  grid-column: 1 / 2;
-  display: grid;
-  grid-template-columns: 1fr 3fr;
-  grid-template-rows: auto auto auto;
+  grid-template-columns: 2fr 4fr;
+  grid-template-rows: 2em auto auto auto;
   grid-column-gap: 2ch;
   align-items: start;
   min-height: 90vh;
   padding-bottom: 5vh;
   border-bottom: 2px;
+  margin-top: 0;
   margin-bottom: 5vh;
-  
-  h3  {
-    grid-column: 1 / 2;
-    grid-row-start: 1;
-    margin-top: 0;
-  }
-  
-  .figure-column {
-    grid-column: 2 / 3;
-    grid-row: 1 / 4;
-    position: sticky;
-    top: 0;
+}
     
-    img, .leaflet.html-widget {
-      height: 90vh !important;
-    }
+h3  {
+  grid-column: 1 / 2;
+  grid-row-start: 1;
+  margin-top: 0;
+}
+
+.map {
+  grid-column: 2 / 3;
+  grid-row: 2 / 5;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+
+  img, .leaflet.html-widget {
+    height: 100vh !important;
   }
-  
-  .text-column {
-    grid-column: 1 / 2;
-    grid-row: 2 / 3;
+}
+
+#title-block-header {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+.text-column {
+  grid-column: 1 / 2;
+  grid-row: 3 / 5;
+
+  ul {
+    font-size: 1.2em;
   }
-  
+
+  p {font-size: 1rem;}
+
   div.footnote {
     grid-column: 1 / 2;
     grid-row: 3 / 4;
     align-self: end;
-    font-size: 0.8rem;
-    color:  var($pale-color)
+
+    p {
+     font-size: 0.8rem;
+      color:  var($pale-color)
+    }
   }
 }
