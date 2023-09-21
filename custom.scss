@@ -36,6 +36,104 @@ $pale-color: #5a6570;
   margin-bottom: 5vh;
 }
     
+.navigation {
+  // grid-column: 2 / 3;
+  // grid-row: 1 / 2;
+  // display: flex;
+  // justify-content: end;
+  position: fixed;
+  left: 50%;
+  
+  ul {
+    background: #FFF;
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+  }
+  
+  li {
+    color: #000;
+    background: #FFF;
+    display: block;
+    float: left;
+    padding: .25rem 0.5rem;
+    position: relative;
+    text-decoration: none;
+    transition-duration: 0.5s;
+  }
+    
+  li a {
+    color: #000;
+  }
+  
+  li:hover, li:focus-within {
+    cursor: pointer;
+  }
+  
+  // To highlight the chain of selected items
+  li:focus-within, li:hover {
+    background: lightblue;
+  }
+  
+// But I don't want to highlight the whole table of contents
+  > ul > li:focus-within, > ul > li:hover {
+    background-color: #FFF;
+    border: 1px solid black
+}
+
+  // li:focus-within a {
+  //   outline: none;
+  // }
+  
+  ul li ul, ul li ul li ul {
+    background: #FFF;
+    visibility: hidden;
+    opacity: 0;
+    min-width: 5rem;
+    position: relative;
+    transition: all 0.5s ease;
+    margin-top: .5rem;
+    display: none;
+  }
+
+  ul li ul {
+    position: relative;
+    left: 0;
+  }
+
+  ul li ul li ul {
+    position: absolute;
+    left: 100%;
+    right: -105%;
+    top: -0.5em;
+    border: 1px solid black;
+  }
+  
+  ul li:hover > ul,
+  ul li:focus-within > ul,
+  ul li ul:hover,
+  ul li ul:focus {
+     visibility: visible;
+     opacity: 1;
+     display: block;
+  }
+  
+  ul li ul li {
+    clear: both;
+    width: 100%;
+  }
+  
+  // > ul > li:first-child:hover, .navigation > ul > li:first-child:focus-within {
+  //   text-align: right
+  // }
+
+  // ul li:hover, .navigation ul li:focus-within, ul li, .navigation ul li {
+  //   text-align: left
+  // }
+
+}
+  
+  
 h3  {
   grid-column: 1 / 2;
   grid-row-start: 1;

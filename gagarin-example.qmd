@@ -9,6 +9,20 @@ execute:
   echo: false
 ---
 
+::: navigation
+```{r}
+#| output: asis
+# Dynamically add sections to table of contents ... there's probably a better way?
+sections <- readLines("/Users/bennotkin/Documents/world-bank/crp/city-scans/city-scan-automation/frontend/city-scan-html-sample/gagarin-example.qmd") %>%
+  subset(str_detect(., "^##")) %>% str_replace("# ", "- ") %>% str_replace_all("#", "  ")
+
+anchors <- sections %>% str_extract("^\\s*- (.*$)", group = T) %>% tolower() %>% str_replace_all(c("[^a-z\\s]" = "", "\\s+" = "-")) %>%
+  str_replace("(.*)", "(#\\1)")
+
+paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("- T.O.C.", ., sep = "\n") }
+```
+:::
+
 ```{r}
 #| include = FALSE
 # Read functions & packages
