@@ -30,7 +30,7 @@ fuzzy_read <- function(city_dir, fuzzy_string, FUN = read_raster, path = F, ...)
 
 # Read raster function 
 # This is the earlier version that takes folder and then file name as the first
-# two args; not sure why I did this
+# two args; I believe I did this so it could be used with fuzzy_read
 read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
   if (!is.null(raster_band)) {
     rast(paste0(folder, '/', raster_name, '.tif'), band = raster_band, ...)
@@ -39,14 +39,14 @@ read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
   }
 }
 
-# Edit this to take just a path
-read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
-  if (!is.null(raster_band)) {
-    rast(paste0(folder, '/', raster_name, '.tif'), band = raster_band, ...)
-  } else {
-    rast(paste0(folder, '/', raster_name, '.tif'), ...)
-  }
-}
+# # Edit this to take just a path
+# read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
+#   if (!is.null(raster_band)) {
+#     rast(paste0(folder, '/', raster_name, '.tif'), band = raster_band, ...)
+#   } else {
+#     rast(paste0(folder, '/', raster_name, '.tif'), ...)
+#   }
+# }
 
 # round_up_breaklist <- function(breaklist, tonum = 10) {
 #   last <- -1000
@@ -55,7 +55,7 @@ read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
 # }
 # 
 # reformulate_legend_labels <- function(lyr) {
-#   # Add warning message if symbology type isn't RASTER_CLASSIFIED or GRAADUATED_COLORS:
+#   # Add warning message if symbology type isn't RASTER_CLASSIFIED or GRADUATED_COLORS:
 #   # "WARNING: for map %s a file that is not classified raster is passed into symbology and legend updating function"
 # }
 
@@ -84,47 +84,6 @@ plot_basemap <- function(basemap_style = "satellite") {
   return(basemap)
 }
 
-override_params <- function(params, yaml_key, inherits = F) {
-  if (!is.null(yaml_key)) {
-    c("palette", "breaks", "center", "title", "domain", "color_scale", "basemap", "labFormat") %>%
-      lapply(function(key) {
-        if (exists(key, inherits = inherits)) {
-          key_value <- eval(parse(text = key))
-          if (!is.null(key_value)) params[[key]] <- key_value
-        } else {
-          # print(paste(key, "not overridden"))
-          params[[key]] <- params[[key]]}
-      })
-  }
-  return(params)
-}
-
-set_domain <- function(data, domain = NULL, center = NULL) {
-  if (!is.null(domain)) return(domain) else {
-    # This is a very basic way to set domain. Look at toolbox for more robust layer-specific methods
-    raster_values <- values(data) %>% subset(!is.na(.))
-    min <- min(raster_values)
-    max <- max(raster_values)
-    domain <- c(min, max)
-    return(domain)
-  }
-}
-
-create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse = F) {
-  if (bins == 0) {
-    color_scale <- colorNumeric(palette = palette, domain = domain,
-                                na.color = 'transparent', reverse = reverse) 
-  } else {
-    color_scale <- colorBin(palette = palette, domain = domain, bins = bins,
-                              na.color = 'transparent', reverse = reverse)         
-  }
-  return(color_scale)
-}
-
-add_aoi <- function(map, data = aoi, color = 'black', weight = 3, fill = F, dashArray = '12', ...) {
-  addPolygons(map, data = data, color = color, weight = weight, fill = fill, dashArray = dashArray, ...)
-}
-
 create_layer_function <- function(data,
                    yaml_key = NULL,
                    palette = NULL,
@@ -138,13 +97,16 @@ create_layer_function <- function(data,
   if (message) message("Check if data is in EPSG:3857; if not, raster is being re-projected")
 
   params <- layer_params[[yaml_key]] %>%
-    override_params(yaml_key = yaml_key)
+    # Replace layer parameters (layers.yml) with args from create_layer_function()
+    override_layer_params(yaml_key = yaml_key)
   
   if (is.null(params$bins)) params$bins <- 0
   if (is.null(params$labFormat)) params$labFormat <- labelFormat()
 
+  layer_values <- get_layer_values(data)
+
   if (is.null(color_scale)) {
-    domain <- set_domain(data, domain = params$domain)
+    domain <- set_domain(layer_values, domain = params$domain)
     color_scale <- create_color_scale(
       domain = domain,
       palette = params$palette,
@@ -152,23 +114,93 @@ create_layer_function <- function(data,
       bins = params$bins)
   }
 
-  layer_id <- yaml_key
+  group <- params$group_id
 
-  layer_function <- function(map) {
-      map %>% addRasterImage(data, opacity = 1,
-                    colors = color_scale,
-                    # For now the group needs to match the section id in the text-column
-                    group = params$title %>% str_replace_all("\\s", "-") %>% tolower(),
-                    layerId = layer_id) %>%
+  layer_function <- function(maps, show = T) {
+      if (class(data)[1] %in% c("SpatRaster", "RasterLayer")) {
+        maps <- maps %>% 
+          addRasterImage(data, opacity = 1,
+            colors = color_scale,
+            # For now the group needs to match the section id in the text-column
+            # group = params$title %>% str_replace_all("\\s", "-") %>% tolower(),
+            group = group)
+      } else if (class(data)[1] %in% c("SpatVector", "sf")) {
+        maps <- maps %>%
+          addPolygons(
+            data = data,
+            fillColor = ~color_scale(values),
+            fillOpacity = 0.9,
+            stroke = F,
+            group = group,
+            label = ~ values)
+      }
       # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
-      addLegend('bottomright', pal = color_scale, values = c(min(values(data), na.rm = T), max(values(data), na.rm = T)), opacity = legend_opacity,
-                # bins = 3,  # legend color ramp does not render if there are too many bins
-                title = params$title %>% str_replace_all("\\s", "-"),
-                labFormat = params$labFormat,
-                group = params$title %>% str_replace_all("\\s", "-") %>% tolower())
+      maps <- maps %>%
+        addLegend('bottomright', pal = color_scale,
+          values = c(min(layer_values, na.rm = T), max(layer_values, na.rm = T)),
+          opacity = legend_opacity,
+          # bins = 3,  # legend color ramp does not render if there are too many bins
+          title = params$title,
+          labFormat = params$labFormat,
+          # group = params$title %>% str_replace_all("\\s", "-") %>% tolower())
+          group = group)
+      # if (!show) maps <- hideGroup(maps, group = layer_id)
+      return(maps)
   }
 
   return(layer_function)
+}
+
+override_layer_params <- function(params, yaml_key, inherits = F) {
+  if (!is.null(yaml_key)) { # Why am I limiting this to if yaml_key isn't null?
+    c("palette", "breaks", "center", "title", "domain", "color_scale", "basemap", "labFormat") %>%
+      lapply(function(key) {
+        if (exists(key, inherits = inherits)) {
+          key_value <- eval(parse(text = key))
+          if (!is.null(key_value)) params[[key]] <- key_value
+        } else {
+          # print(paste(key, "not overridden"))
+          params[[key]] <- params[[key]]}
+      })
+  }
+  return(params)
+}
+
+get_layer_values <- function(data) {
+  if (class(data)[1] %in% c("SpatRaster", "SpatVector")) {
+      values <- values(data)
+    } else if (class(data)[1] == "sf") {
+      values <- data$values
+    } else stop("Data is not of class SpatRaster, SpatVector or sf")
+  return(values)
+}
+
+set_domain <- function(values, domain = NULL, center = NULL) {
+  if (!is.null(domain)) return(domain) else {
+    # This is a very basic way to set domain. Look at toolbox for more robust layer-specific methods
+    min <- min(values, na.rm = T)
+    max <- max(values, na.rm = T)
+    domain <- c(min, max)
+    return(domain)
+  }
+}
+
+create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse = F) {
+  if (bins == 0) {
+    color_scale <- colorNumeric(
+      palette = colorRamp(palette, interpolate = "linear"),
+      domain = domain,
+      na.color = 'transparent',
+      reverse = reverse) 
+  } else {
+    color_scale <- colorBin(palette = palette, domain = domain, bins = bins,
+                              na.color = 'transparent', reverse = reverse)         
+  }
+  return(color_scale)
+}
+
+add_aoi <- function(map, data = aoi, color = 'black', weight = 3, fill = F, dashArray = '12', ...) {
+  addPolygons(map, data = data, color = color, weight = weight, fill = fill, dashArray = dashArray, ...)
 }
 
 # Making the static map, given the dynamic map

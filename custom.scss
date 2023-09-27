@@ -215,6 +215,12 @@ h3  {
   }
   
   // Prevent map from scrolling up too much & ensuring all sections hit scrollama offset point
-  section {min-height: 90vh;}
+  section {
+    min-height: 90vh;
+    // This is probably an overly complicated way to ensure each slide is vertically centered
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
   > section {margin-bottom: 100vh;} 
 }
