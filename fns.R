@@ -63,6 +63,9 @@ read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
 plot_basemap <- function(basemap_style = "satellite") {
   basemap <-leaflet(
       data = aoi,
+      # Need to probably do this with javascript
+      height = "100vh",
+      width = "100%",
       options = leafletOptions(zoomControl = F, zoomSnap = 0.1)) %>% 
     fitBounds(lng1 = unname(aoi_bounds$xmin - (aoi_bounds$xmax - aoi_bounds$xmin)/20),
               lat1 = unname(aoi_bounds$ymin - (aoi_bounds$ymax - aoi_bounds$ymin)/20),
@@ -154,14 +157,15 @@ create_layer_function <- function(data,
   layer_function <- function(map) {
       map %>% addRasterImage(data, opacity = 1,
                     colors = color_scale,
-                    group = params$title,
+                    # For now the group needs to match the section id in the text-column
+                    group = params$title %>% str_replace_all("\\s", "-") %>% tolower(),
                     layerId = layer_id) %>%
       # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
       addLegend('bottomright', pal = color_scale, values = c(min(values(data), na.rm = T), max(values(data), na.rm = T)), opacity = legend_opacity,
                 # bins = 3,  # legend color ramp does not render if there are too many bins
-                title = params$title,
+                title = params$title %>% str_replace_all("\\s", "-"),
                 labFormat = params$labFormat,
-                group = params$title)
+                group = params$title %>% str_replace_all("\\s", "-") %>% tolower())
   }
 
   return(layer_function)

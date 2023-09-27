@@ -60,13 +60,15 @@ function handleStepEnter(response) {
     return colorRows.includes(response.index)
   })
   
-  var header = $graphic.select("h3")
-  var mapText = $graphic.select("p")
-  header.text(response.element.id)
+    // This is for testing purposes and requires a level 3 header and a paragraph above the map
+  // var header = $graphic.select("h3")
+  // var mapText = $graphic.select("p")
+  // header.text(response.element.id)
   
   var layerIndex = overlayLayers.indexOf(response.element.id)
   if (layerIndex >= 0) {
-    mapText.text(response.element.id);
+    // This is for testing purposes and requires a level 3 header and a paragraph above the map
+    // mapText.text(response.element.id);
     console.log(response.element.id + ": " + checkLayerStatus(response.element.id));
     if (!checkLayerStatus(response.element.id)) {
       $overlaysControl.node().getElementsByTagName("input")[layerIndex].click()
@@ -106,8 +108,9 @@ function init() {
 init();
 ```
 
+::: setup
 ```{r}
-#| include = FALSE
+#| include: false
 # Read functions & packages
 # Only the github version of leaflet supports terra, in place of raster, which is now required as sp (on which raster depends) is being deprecated
 # devtools::install_github('rstudio/leaflet')
@@ -136,6 +139,21 @@ useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; I
 layer_params <- read_yaml('layers.yml')
 ```
 
+```{r}
+#| include: false
+
+# Define the AOI
+aoi <- st_read(paste0(city_dir, "AOI"))
+aoi_bounds <- st_bbox(aoi)
+
+# Inititate the map here, will build on it in each "slide"
+all_maps <- plot_basemap("vector")
+
+# Keep track of added layers
+added_layers <- c()
+```
+:::
+
 ::: navigation
 ```{r}
 #| output: asis
@@ -147,62 +165,6 @@ anchors <- sections %>% str_extract("^\\s*- (.*$)", group = T) %>% tolower() %>%
   str_replace("(.*)", "(#\\1)")
 
 paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("- T.O.C.", ., sep = "\n") }
-```
-:::
-
-```{r, include=F}
-aoi <- st_read(paste0(city_dir, "AOI"))
-aoi_bounds <- st_bbox(aoi)
-```
-
-::: maps
-
-### Placeholder
-
-Text
-
-```{r}
-# Read population data
-pop <- fuzzy_read(city_dir, "population")
-
-# Read RWI
- rwi <- st_read(paste0(city_dir, "output/relative_wealth_index"), quiet = T) %>%
-   select(values = rwi, long = longitude, lat = latitude)
-
- # rwi_range <- max(c(abs(min(rwi$values)), max(rwi$values))) %>% {c(-., 0, .)}
- 
- rwi_color_scale <- colorNumeric(
-  palette = colorRamp(c('#ED431B', '#FF9169', '#FFFFBA', '#70C5AD', '#009E7A'), interpolate = 'linear'),
-  domain = NULL,
-  na.color = 'transparent')
-
-add_pop_layer <- create_layer_function(data = pop, yaml_key = "population")
-
-add_rwi_layer <- function(map) {
-  map %>% addPolygons(data = rwi, fillColor = ~rwi_color_scale(values), fillOpacity = 1, stroke = F,
-              group = "relative-wealth-index",
-              label = ~values,
-              # , options = pathOptions(pane = "get-low")
-              ) %>%
-  addLegend('bottomright', pal = rwi_color_scale, values = c(min(rwi$values, na.rm = T), max(rwi$values, na.rm = T)), opacity = legend_opacity,
-              # bins = 3,  # legend color ramp does not render if there are too many bins
-              title = layer_params$rwi$title,
-              labFormat = labelFormat(),
-              group = "relative-wealth-index")
-}
-
-plot_basemap("vector") %>%
-  # addMapPane("get-low", zIndex = 200) %>%
-  # addMapPane("hands-up", zIndex = 500) %>%
-  # add_rwi_layer(options = pathOptions(pane = "get-low")) %>%
-  add_rwi_layer() %>%
-  add_pop_layer() %>%
-  # add_pop_layer(options = pathOptions(pane = "hands-up")) %>%
-  add_aoi() %>%
-  addLayersControl(overlayGroups = c("relative-wealth-index", "population-density"),
-                       options = layersControlOptions(collapsed = FALSE)) #%>%
-  # showGroup("RWIZZZ")
-  # htmlwidgets::onRender()
 ```
 :::
 
@@ -253,6 +215,18 @@ Reproductive age is defined as 15--49. Working age is defined as 15--64.
 
 ### Population Density
 
+```{r}
+#| include: false
+# Read population data
+pop <- fuzzy_read(city_dir, "population")
+add_pop_layer <- create_layer_function(data = pop, yaml_key = "population")
+
+all_maps <- add_pop_layer(all_maps) %>%
+  # This could be put into the add_*_layer() functions themselves
+  hideGroup("population-density")
+added_layers <- c(added_layers, "population-density")
+```
+
 -   Population density is greatest in the western towns of Gagarin
 -   It is lowest ...
 
@@ -272,10 +246,51 @@ Add any footnotes to this separate div with class `.footnote`.
 
 ### Relative Wealth Index
 
+```{r}
+#| include: false
+# Read RWI
+rwi <-
+  st_read(paste0(city_dir, "output/relative_wealth_index"), quiet = T) %>%
+  select(values = rwi, long = longitude, lat = latitude)
+
+# rwi_range <- max(c(abs(min(rwi$values)), max(rwi$values))) %>% {c(-., 0, .)}
+
+rwi_color_scale <- colorNumeric(
+  palette = colorRamp(
+    c('#ED431B', '#FF9169', '#FFFFBA', '#70C5AD', '#009E7A'),
+    interpolate = 'linear'),
+  domain = NULL,
+  na.color = 'transparent')
+
+add_rwi_layer <- function(map) {
+  map %>% addPolygons(
+    data = rwi,
+    fillColor = ~ rwi_color_scale(values),
+    fillOpacity = 1,
+    stroke = F,
+    group = "relative-wealth-index",
+    label = ~ values) %>%
+    addLegend(
+      'bottomright',
+      pal = rwi_color_scale,
+      values = c(min(rwi$values, na.rm = T), max(rwi$values, na.rm = T)),
+      opacity = legend_opacity,
+      # bins = 3,  # legend color ramp does not render if there are too many bins
+      title = layer_params$rwi$title,
+      labFormat = labelFormat(),
+      group = "relative-wealth-index")
+}
+
+all_maps <- add_rwi_layer(all_maps) %>%
+  # This could be put into the add_*_layer() functions themselves
+  hideGroup("relative-wealth-index")
+added_layers <- c(added_layers, "relative-wealth-index")
+```
+
 -   Wealth appears greatest in the villages of Gagarin and, secondarily, Ddmashen
 -   The lowest wealth areas are primarily areas with very low population density
 
-This map shows micro-estimates of wealth and poverty relative to the whole country that cover the populated surface at a 2.4 km2 resolution. Many critical policy decisions, from strategic investments to the allocation of humanitarian aid, rely on data about the geographic distribution of wealth and poverty.
+This map shows micro-estimates of wealth and poverty relative to the whole country that cover the populated surface at a 2.4 km^2^ resolution. Many critical policy decisions, from strategic investments to the allocation of humanitarian aid, rely on data about the geographic distribution of wealth and poverty.
 
 ::: footnote
 Map data from Meta Data for Good.
@@ -292,5 +307,19 @@ See https://rstudio.github.io/leaflet/showhide.html
 ## Another section
 
 ### And a "slide" within it
+
 Text
+:::
+
+::: maps
+```{r}
+all_maps %>%
+  add_aoi() %>%
+  addLayersControl(
+    overlayGroups = added_layers,
+    options = layersControlOptions(collapsed = FALSE))
+
+  # If I want to use javascript directly I could use htmlwidgets::onRender(),
+  # or maybe just an observable cell
+```
 :::
