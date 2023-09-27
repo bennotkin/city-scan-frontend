@@ -140,7 +140,7 @@ h3  {
   margin-top: 0;
 }
 
-.map {
+.maps {
   grid-column: 2 / 3;
   grid-row: 2 / 5;
   position: sticky;
@@ -150,6 +150,41 @@ h3  {
   img, .leaflet.html-widget {
     height: 100vh !important;
   }
+}
+
+// // For learning scrollama; delete once understood & proven
+// .maps #scrollama-test {
+//   background: coral;
+//   height: 1vh;
+//   opacity: .5;
+// }
+
+// .maps.is-active {
+//  // background: skyblue;
+// }
+
+// .maps #scrollama-test.is-active {
+//   background: cornsilk;
+// }
+
+// .text-column section.is-active {
+//   background: cornsilk;
+//   color: black;
+// }
+
+// .text-column {
+//   color: darkgrey;
+// }
+
+////
+
+.text-column section.is-active {
+  // background: cornsilk;
+  color: black;
+}
+
+.text-column {
+  color: darkgrey;
 }
 
 #title-block-header {
@@ -177,4 +212,8 @@ h3  {
       color:  var($pale-color)
     }
   }
+  
+  // Prevent map from scrolling up too much & ensuring all sections hit scrollama offset point
+  section {min-height: 90vh;}
+  > section {margin-bottom: 100vh;} 
 }
