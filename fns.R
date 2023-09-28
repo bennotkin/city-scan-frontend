@@ -91,22 +91,50 @@ create_layer_function <- function(data,
                    center = NULL,
                    breaks = NULL,
                    color_scale = NULL,
-                   basemap = "vector",
+                   bins = NULL,
+                   # basemap = NULL,
                    message = F,
                    labFormat = NULL) {
   if (message) message("Check if data is in EPSG:3857; if not, raster is being re-projected")
 
   layer_params <- read_yaml('layers.yml')
 
-  params <- layer_params[[yaml_key]] %>%
-    # Replace layer parameters (layers.yml) with args from create_layer_function()
-    override_layer_params(yaml_key = yaml_key)
+  # args_envir <- environment()
+  
+  # This replaces the layer_params yaml values with the function arguments, if they are not null
+  # This was the intention of override_layer_params() and the commented out code below, but I was
+  # having environment issues.
+  params <- layer_params[[yaml_key]]
+  argument_keys <- c("palette", "bins", "breaks", "center", "domain", "color_scale", "labFormat") 
+  for (argument_key in argument_keys) {
+    if(exists(argument_key)) {
+      argument_value <- get(argument_key)
+      if(!is.null(argument_value)) {
+        params[[argument_key]] <- argument_value
+      }
+    }
+  }
+
+# lapply(
+#   ls() %>% subset(!(. %in% c("data", "args_envir"))) %>% .[1:7],
+#   function (argument_key) {
+#     argument_value <- get(argument_key)
+#     if (!is.null(argument_value)) {
+#       return(argument_value)
+#     } else {
+#       return(layer_params[[yaml_key]][[argument_key]])
+#     }
+#   })
+#   
+#   params <- layer_params[[yaml_key]] %>%
+#     # Replace layer parameters (layers.yml) with args from create_layer_function()
+#     override_layer_params(yaml_key = yaml_key, args_envir = args_envir)
   
   if (is.null(params$bins)) params$bins <- 0
   if (is.null(params$labFormat)) params$labFormat <- labelFormat()
 
   layer_values <- get_layer_values(data)
-
+  
   if (is.null(color_scale)) {
     domain <- set_domain(layer_values, domain = params$domain, center = params$center)
     color_scale <- create_color_scale(
@@ -118,8 +146,33 @@ create_layer_function <- function(data,
 
   group <- params$group_id
 
+  # CRC Workshop's app.R's raster_discrete() uses the following variables
+  # What are each of these doing and do I need to use them?
+  # - map_id: this is Shiny specific and names the map
+  # - input_name: used to name the layer group (my group_id)
+  # - raster_var: x in addRasterImage or 
+  # - raster_col: either a color scale function or a vector of colors?
+  # - raster_val: for discrete rasters, legend labels; for continuous, the raster values
+  #   - this is used in the color_scale with raster_col(raster_val) and as the legend labels
+  #   - for the legend labels, need to match the colors in raster_col (same number)  -- it might
+  #     be helpful to just use dicitonaries instead (like I do with landcover in CRC)
+  # - leg_title: title for the legend
+  # - lab_suffix = '' : suffix to use for the labels
+
+  # Differences between raster_discrete and raster_continuous in app.r:
+  # - raster_col can be either a function or a character vector of colors
+  #   - if it is a function
+  #     - raster_continuous
+  #       - addLegend uses `pal` instead of `colors`
+  #       - addLegend uses `values` instead of `labels` (though maybe this could be changed?)
+  #     - raster_discrete
+  #       - addLegend uses `colors = raster_col(raster_val)`
+  #       - addLegend uses `labels = names(raster_val)`
+  #   - if it is not a function (so it's a character vector of colors)
+
   layer_function <- function(maps, show = T) {
       if (class(data)[1] %in% c("SpatRaster", "RasterLayer")) {
+      # RASTER
         maps <- maps %>% 
           addRasterImage(data, opacity = 1,
             colors = color_scale,
@@ -127,6 +180,7 @@ create_layer_function <- function(data,
             # group = params$title %>% str_replace_all("\\s", "-") %>% tolower(),
             group = group)
       } else if (class(data)[1] %in% c("SpatVector", "sf")) {
+      # VECTOR
         maps <- maps %>%
           addPolygons(
             data = data,
@@ -141,6 +195,7 @@ create_layer_function <- function(data,
         addLegend('bottomright', pal = color_scale,
           values = domain,
           opacity = legend_opacity,
+          # bins = params$bins,
           # bins = 3,  # legend color ramp does not render if there are too many bins
           title = params$title,
           labFormat = params$labFormat,
@@ -153,20 +208,27 @@ create_layer_function <- function(data,
   return(layer_function)
 }
 
-override_layer_params <- function(params, yaml_key, inherits = F) {
-  if (!is.null(yaml_key)) { # Why am I limiting this to if yaml_key isn't null?
-    c("palette", "breaks", "center", "title", "domain", "color_scale", "basemap", "labFormat") %>%
-      lapply(function(key) {
-        if (exists(key, inherits = inherits)) {
-          key_value <- eval(parse(text = key))
-          if (!is.null(key_value)) params[[key]] <- key_value
-        } else {
-          # print(paste(key, "not overridden"))
-          params[[key]] <- params[[key]]}
-      })
-  }
-  return(params)
-}
+# override_layer_params <- function(params, yaml_key, inherits = T, args_envir) {
+#   # print("Made it inside override!")
+#   if (!is.null(yaml_key)) { # Why am I limiting this to if yaml_key isn't null?
+#   # print("and inside if!")
+#         params <- lapply(
+#         c("palette", "bins", "breaks", "center", "title", "domain", "color_scale", "basemap", "labFormat"),
+#         function(key) {
+#         # print("inside lapply!")
+#         if (exists(key, envir = args_envir, inherits = inherits)) {
+#           print(paste(key, "existss1"))
+#           # key_value <- eval(parse(text = key))
+#           key_value <- get(key, envir = args_envir)
+#           if (!is.null(key_value)) params[[key]] <- key_value
+#         } else {
+#           # print(paste(key, "not overridden"))
+#           params[[key]] <- params[[key]]}
+#           return(params)
+#       })
+#   }
+#   return(params)
+# }
 
 get_layer_values <- function(data) {
   if (class(data)[1] %in% c("SpatRaster", "SpatVector")) {
@@ -199,8 +261,13 @@ create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse
       na.color = 'transparent',
       reverse = reverse) 
   } else {
-    color_scale <- colorBin(palette = palette, domain = domain, bins = bins,
-                              na.color = 'transparent', reverse = reverse)         
+    color_scale <- colorBin(
+      palette = palette,
+      domain = domain,
+      bins = bins,
+      # Might want to turn pretty back on
+      pretty = FALSE,
+      na.color = 'transparent', reverse = reverse)         
   }
   return(color_scale)
 }
