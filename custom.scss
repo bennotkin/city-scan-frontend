@@ -186,6 +186,10 @@ h3  {
 
 .text-column {
   color: darkgrey;
+  
+  h2, h3 {
+    color: black;
+  }
 }
 
 #title-block-header {
@@ -222,5 +226,10 @@ h3  {
     flex-direction: column;
     justify-content: center;
   }
-  > section {margin-bottom: 100vh;} 
+  > section {
+    padding-bottom: 3rem;
+    border-bottom: 1px solid black;
+    margin-bottom: 3rem;
+  }
+  > section::last-child {margin-bottom: 100vh;} 
 }

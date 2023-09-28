@@ -4,7 +4,7 @@ library(sf)
 library(leaflet)
 library(yaml)
 library(stringr)
-library(mapview)
+# library(mapview)
 library(dplyr)
 
 # Functions ----
@@ -96,6 +96,8 @@ create_layer_function <- function(data,
                    labFormat = NULL) {
   if (message) message("Check if data is in EPSG:3857; if not, raster is being re-projected")
 
+  layer_params <- read_yaml('layers.yml')
+
   params <- layer_params[[yaml_key]] %>%
     # Replace layer parameters (layers.yml) with args from create_layer_function()
     override_layer_params(yaml_key = yaml_key)
@@ -106,7 +108,7 @@ create_layer_function <- function(data,
   layer_values <- get_layer_values(data)
 
   if (is.null(color_scale)) {
-    domain <- set_domain(layer_values, domain = params$domain)
+    domain <- set_domain(layer_values, domain = params$domain, center = params$center)
     color_scale <- create_color_scale(
       domain = domain,
       palette = params$palette,
@@ -137,7 +139,7 @@ create_layer_function <- function(data,
       # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
       maps <- maps %>%
         addLegend('bottomright', pal = color_scale,
-          values = c(min(layer_values, na.rm = T), max(layer_values, na.rm = T)),
+          values = domain,
           opacity = legend_opacity,
           # bins = 3,  # legend color ramp does not render if there are too many bins
           title = params$title,
@@ -176,13 +178,17 @@ get_layer_values <- function(data) {
 }
 
 set_domain <- function(values, domain = NULL, center = NULL) {
-  if (!is.null(domain)) return(domain) else {
+  if (is.null(domain)) {
     # This is a very basic way to set domain. Look at toolbox for more robust layer-specific methods
     min <- min(values, na.rm = T)
     max <- max(values, na.rm = T)
     domain <- c(min, max)
-    return(domain)
   }
+  if (!is.null(center)) if (center == 0) {
+    extreme <- max(abs(domain))
+    domain <- c(-extreme, extreme)
+  }
+  return(domain)
 }
 
 create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse = F) {

@@ -37,6 +37,14 @@ overlayLayers = Array.prototype.map
 
 // console.log(overlayLayers)
 
+// Hides all legends. I'm not sure why the legends continue to show
+// at the start even when I use `hideGroup`, so this is my workaround
+// (Should use overlayLayers but I don't feel like testng right now)
+arry = Array.from(document.getElementsByClassName("leaflet-control-layers-overlays")[0]
+  .getElementsByTagName("input"));
+arry.forEach(element => element.click())
+
+
 function checkLayerStatus(spanText) {
   var inputs = $overlaysControl.node().getElementsByTagName("input")
   var index = overlayLayers.indexOf(spanText)
@@ -171,11 +179,36 @@ paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("
 :::
 
 ::: text-column
+## Setting the Context
+
+### Basic City Information
+```{r}
+# Add a map layer? But it's just the AOI
+```
+
+Gagarin is a village in the Sevan Municipality of the Gegharkunik region of Armenia. It was founded in 1955, and proudly bears the name of Yuri Gagarin, the first human to orbit the Earth. Gagarin is located near Lake Sevan, the largest lake in the Caucasus, and only 50 km from the capital Yerevan. Surrounded by mountains, roughly 11,000 inhabitants live in several villages spread throughout the district of Sevan. 
+
+The local economy of the district thrives primarily on tourism, agriculture, and fisheries. The fertile lands surrounding Lake Sevan support various agricultural activities, and fishing in the lake itself is a significant economic contributor. The lake yields various fish species that are harvested and sold locally and regionally. 
+
+Armenia has set a target of attracting 2.5 million tourists annually by 2026. In pursuit of this objective, the DAR Foundation for Regional Development and Competitiveness has established the Gagarin Project. This initiative focuses on the development of Gagarin, as well as Geghamavan, Ddmashen, Zovaber, Tsaghkunk, and Varser settlements within the Sevan community. The overarching goal of the Gagarin Project is to foster sustainable development within a self-sufficient community, with a particular emphasis on creating a competitive education ecosystem, establishing a high-quality environment, and promoting sustainable economic growth, notably in the realm of agriculture.
+
+::: footnote
+The black and yellow boundary marks the area of interest for the City Scan. The black-only lines outline the six villages.
+
+\*The AOI, and the population figure, includes the villages of AOI includes Ddmashen, Geghamavan, Tsaghkunk, Varser and Zovaber, as well as Gagarin.
+
+City Population. Babayan, Araik et al. DAR Foundation for Regional Development and Competitiveness, N.D.:::
+:::
+
+### The State of Urban Infrastructure and Service Delivery
+
+_Insert the infrastructure text here._
+
 ## Population and Demographic Trends
 
 ### Population Growth
 
-<!-- ![](images/oxford-pop-growth.png) -->
+![](images/oxford-pop-growth.png)
 
 -   From 2001 to 2011, the area's population grew from 10,060 to 10,391, at an average annual rate of just 0.3%
 -   The villages Varser, Ddmashen and Zovaber grew in this period, while the villages Gagarin, Geghamavan, Tsaghkunk shrunk
@@ -184,7 +217,7 @@ Population figures are typically used as a denominator for many indicators, and 
 
 ### Population Charts
 
-<!-- ![](images/oxford-pop-density-scatter.png) -->
+![](images/oxford-pop-density-scatter.png)
 
 -   Of the six villages, Gagarin has the highest at 2,860 people per km<sup>2</sup>, while Tsaghkunk has the lowest at 1,057
 -   Together, the six villages have a density of 1,689 people per km<sup>2</sup>, which is denser than Areni and Yerevan (1,174 per km<sup>2</sup>) but less dense than Dilijan and Gyumri
@@ -197,7 +230,7 @@ Populations and areas are from CityPopulation.de. Note that the extents used by 
 
 ### Population Distribution by Age & Sex
 
-<!-- ![](images/world-pop-age-sex.png) -->
+![](images/world-pop-age-sex.png)
 
 -   The largest age group in the area is people ages 25--34
 -   For males, another large age group is ages 0--14
@@ -229,22 +262,14 @@ all_maps <- add_pop_layer(all_maps)
 added_layers <- c(added_layers, "population-density")
 ```
 
--   Population density is greatest in the western towns of Gagarin
--   It is lowest ...
+- Population density is highest in Zovaber and Ddmashen
+- Density is lowest in Tsaghkunk
+- There appear to be almost no inhabitants outside of the villages
+- The area of high density to the east of Varser is the western edge of the town of Sevan
+- The town of Gagarin’s density is higher in the east than the west
+- The town of Ddmashen’s density is higher in the north than in the south
 
-This map estimates population numbers per 10,000 m<sup>2</sup> grid cell. It provides a more consistent representation of population distributions across different landscapes than administrative unit counts. Knowing where people are is critical for impact assessments and intervention plans, especially those focused on service delivery, food security, climate change, network systems and natural disasters.
-
-::: footnote
-Map data from WorldPop. Bondarenko, et al, Census/projection-disaggregated gridded population datasets, 2020.
-:::
-
-### Third level heading (###) creates new slide
-
-A new slide will require new methodology text. Add this here in the second column. Columns can be added in RStudio using the Insert menu, or via markdown in any text editor.
-
-::: footnote
-Add any footnotes to this separate div with class `.footnote`.
-:::
+This map estimates population numbers per 10,000 m^2^ grid cell. It provides a more consistent representation of population distributions across different landscapes than administrative unit counts. Knowing where people are is critical for impact assessments and intervention plans, especially those focused on service delivery, food security, climate change, network systems and natural disasters.
 
 ### Relative Wealth Index
 
@@ -312,7 +337,7 @@ add_rwi_layer <- create_layer_function(data = rwi, yaml_key = "rwi")
 all_maps <- add_rwi_layer(all_maps)
   # This could be put into the add_*_layer() functions themselves
   # hideGroup("relative-wealth-index")
-added_layers <- c(added_layers, "relative-wealth-index")
+added_layers <- c(added_layers, layer_params[["rwi"]]$group)
 ```
 
 -   Wealth appears greatest in the villages of Gagarin and, secondarily, Ddmashen
@@ -324,6 +349,64 @@ This map shows micro-estimates of wealth and poverty relative to the whole count
 Map data from Meta Data for Good.
 :::
 
+## Economic Activity
+
+### Economic Hotspots
+```{r}
+economic_activity <- fuzzy_read(city_dir, "avg_rad_sum")
+
+add_economic_activity_layer <- create_layer_function(data = economic_activity, yaml_key = "economic-activity")
+all_maps <- add_economic_activity_layer(all_maps)
+added_layers <- c(added_layers, layer_params[["economic-activity"]]$group)
+```
+
+- Economic activity appears greatest in Gagarin and Zovaber
+- Activity is also higher along the border of Sevan
+
+This map measures the total emissions of nighttime lights from the monthly average of radiance for 2014 through 2022. Nighttime light radiance is a common proxy for economic activity: where there is more artificial light, there is generally more commercial activity.
+
+::: footnote
+Map data from NOAA, “VIIRS Daily Mosaic”.
+:::
+
+### Change in Economic Hotspots
+```{r}
+economic_change <- fuzzy_read(city_dir, "linfit")
+add_economic_change_layer <- create_layer_function(data = economic_change, yaml_key = "economic-change")
+all_maps <- add_economic_change_layer(all_maps)
+added_layers <- c(added_layers, layer_params[["economic-change"]]$group)
+```
+
+- Economic activity appears to be increasing the most along the border of Sevan, including in southeastern Gagarin village
+- Activity is also increasing in Zovaber, especially in the center
+- Activity appears to be decreasing in Ddmashen and northeastern Tsaghkunk
+
+The map illustrates monthly temporal changes from 2014 to 2022 in the emission of nighttime lights, indicating changes in economic activity. Positive values represent an increase in the intensity of nighttime light emission and, by proxy, economic activity, while negative values represent a decrease in the intensity of nighttime light emission, and economic activity.
+
+::: footnote
+Map data from NOAA, “VIIRS Daily Mosaic”.
+:::
+
+## Built Form
+
+### Urban Extent and Change
+```{r}
+wsf <- fuzzy_read(city_dir, "WSF.*4326")
+values(wsf)[values(wsf) == 0] <- NA
+add_wsf_layer <- create_layer_function(data = wsf, yaml_key = "wsf")
+all_maps <- add_wsf_layer(all_maps)
+added_layers <- c(added_layers, layer_params[["wsf"]]$group)
+```
+
+- Almost all (74%) of the built-up area predates 1985
+- The villages’ built-up area grew from 3.2 km2 in 1985 to 4.3 km2 in 2015, for 35% growth
+- The years of most rapid growth were 1989–1991, 2004–2006, and 2014–2015
+- In 1986–1995, Ddmashen grew to the west, Gagarin to the southwest, and Varser to the northeast
+
+::: footnote
+Map data from DLR, 2015, “World Settlement Footprint Evolution - Landsat 5/7 - Global”.
+:::
+
 ### Now with layers control
 
 Add text
@@ -331,6 +414,45 @@ Add text
 ::: footnote
 See https://rstudio.github.io/leaflet/showhide.html
 :::
+
+### Land Cover
+```{r}
+# lc <- fuzzy_read(city_dir, "landcover")
+
+#   lc_values <- c(
+#     # 'No data' = 0,
+#     'Tree cover' = 10,
+#     'Shrubland' = 20,
+#     'Grassland' = 30,
+#     'Cropland' = 40,
+#     'Built-up' = 50,
+#     'Bare/sparse vegetation' = 60,
+#     'Snow and ice' = 70,
+#     'Permanent water bodies' = 80,
+#     'Herbaceous wetland' = 90,
+#     'Mangroves' = 95)
+#   lc_colors <- colorFactor(
+#     palette = c(
+#       '0'  = 'transparent', # 'No data'
+#       '10' = '#277242', # 'Tree cover'
+#       '20' = '#DEBA59', # 'Shrubland'
+#       '30' = '#79A54F', # 'Grassland'
+#       '40' = '#E88B39', # 'Cropland'
+#       '50' = '#C62421', # 'Built-up'
+#       '60' = '#9C9085', # 'Bare/sparse vegetation
+#       '70' = '#DDDDDD', # Snow and ice
+#       '80' = '#2491D7', # 'Permanent water bodies'
+#       '90' = '#707CBA', # 'Herbaceous wetland'
+#       '95' = '#00C86E', # Mangroves
+#       '100' = '#f6e8a1'),
+#     levels = c(10*0:9, 95),
+#     na.color = '#00000000')
+
+# add_lc_layer <- create_layer_function(data = lc, yaml_key = "lc", color_scale = lc_colors)
+# add_lc_layer(all_maps)
+```
+
+
 
 ## Another section
 
