@@ -84,51 +84,16 @@ plot_basemap <- function(basemap_style = "satellite") {
   return(basemap)
 }
 
-create_layer_function <- function(data,
-                   yaml_key = NULL,
-                   palette = NULL,
-                   domain = NULL,
-                   center = NULL,
-                   breaks = NULL,
-                   color_scale = NULL,
-                   bins = NULL,
-                   # basemap = NULL,
-                   message = F,
-                   labFormat = NULL) {
+create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, message = F, ...) {
   if (message) message("Check if data is in EPSG:3857; if not, raster is being re-projected")
 
+  # Override the layers.yaml parameters with arguments provided to ...
+  # Parameters include bins, breaks, center, color_scale, domain, labFormat, and palette
   layer_params <- read_yaml('layers.yml')
-
-  # args_envir <- environment()
-  
-  # This replaces the layer_params yaml values with the function arguments, if they are not null
-  # This was the intention of override_layer_params() and the commented out code below, but I was
-  # having environment issues.
-  params <- layer_params[[yaml_key]]
-  argument_keys <- c("palette", "bins", "breaks", "center", "domain", "color_scale", "labFormat") 
-  for (argument_key in argument_keys) {
-    if(exists(argument_key)) {
-      argument_value <- get(argument_key)
-      if(!is.null(argument_value)) {
-        params[[argument_key]] <- argument_value
-      }
-    }
-  }
-
-# lapply(
-#   ls() %>% subset(!(. %in% c("data", "args_envir"))) %>% .[1:7],
-#   function (argument_key) {
-#     argument_value <- get(argument_key)
-#     if (!is.null(argument_value)) {
-#       return(argument_value)
-#     } else {
-#       return(layer_params[[yaml_key]][[argument_key]])
-#     }
-#   })
-#   
-#   params <- layer_params[[yaml_key]] %>%
-#     # Replace layer parameters (layers.yml) with args from create_layer_function()
-#     override_layer_params(yaml_key = yaml_key, args_envir = args_envir)
+  yaml_params <- layer_params[[yaml_key]]
+  new_params <- list(...)
+  kept_params <- yaml_params[!names(yaml_params) %in% names(new_params)]
+  params <- c(new_params, kept_params)
   
   if (is.null(params$bins)) params$bins <- 0
   if (is.null(params$labFormat)) params$labFormat <- labelFormat()
@@ -208,28 +173,6 @@ create_layer_function <- function(data,
   return(layer_function)
 }
 
-# override_layer_params <- function(params, yaml_key, inherits = T, args_envir) {
-#   # print("Made it inside override!")
-#   if (!is.null(yaml_key)) { # Why am I limiting this to if yaml_key isn't null?
-#   # print("and inside if!")
-#         params <- lapply(
-#         c("palette", "bins", "breaks", "center", "title", "domain", "color_scale", "basemap", "labFormat"),
-#         function(key) {
-#         # print("inside lapply!")
-#         if (exists(key, envir = args_envir, inherits = inherits)) {
-#           print(paste(key, "existss1"))
-#           # key_value <- eval(parse(text = key))
-#           key_value <- get(key, envir = args_envir)
-#           if (!is.null(key_value)) params[[key]] <- key_value
-#         } else {
-#           # print(paste(key, "not overridden"))
-#           params[[key]] <- params[[key]]}
-#           return(params)
-#       })
-#   }
-#   return(params)
-# }
-
 get_layer_values <- function(data) {
   if (class(data)[1] %in% c("SpatRaster", "SpatVector")) {
       values <- values(data)
@@ -278,7 +221,7 @@ add_aoi <- function(map, data = aoi, color = 'black', weight = 3, fill = F, dash
 
 # Making the static map, given the dynamic map
 mapshot_styled <- function(map_dynamic, file_suffix, return) {
-  mapshot(map_dynamic,
+  mapview::mapshot(map_dynamic,
           remove_controls = c('zoomControl'),
           file = paste0(output_dir, city_string, '-', file_suffix, '.png'),
           vheight = vheight, vwidth = vwidth, useragent = useragent)
