@@ -1,0 +1,8 @@
+- source: gagarin-example.qmd
+  quarto-pub:
+    - id: 462f347f-d8c2-40f9-af26-3fc821f31bd6
+      url: 'https://bennotkin.quarto.pub/city-scan-html-sample'
+- source: gagarin-input.qmd
+  quarto-pub:
+    - id: aa8dfc11-858e-467e-961f-6af27d85487a
+      url: 'https://bennotkin.quarto.pub/gagarin-city-scan-form'
