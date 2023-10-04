@@ -1,0 +1,38 @@
+setting_the_context:
+  basic_city_info:
+    footnote: |
+      The black and yellow boundary marks the area of interest for the City Scan. The black-only lines outline the six villages.[^1]
+      
+      [^1]: You can also add markdown footnotes with `[^1]; for now these appear at the very bottom of the page.      
+      
+      \*The AOI, and the population figure, includes the villages of AOI includes Ddmashen, Geghamavan, Tsaghkunk, Varser and Zovaber, as well as Gagarin.
+      City Population. Babayan, Araik et al. DAR Foundation for Regional Development and Competitiveness, N.D.
+demographics:
+  population_growth:
+    method: Population figures are typically used as a denominator for many indicators, and are a measure of demand for services. The line chart above summarizes the city's population change according to census and other public data. High growth of urban populations, caused by rates of natural increase (more births than deaths) in urban areas, migration from rural to urban areas, and the transformation of rural settlements into urban places, puts pressure on cities to meet the new demand.
+    footnote: NULL
+  population_density_chart:
+    method: Density is calculated using the most recent census population recorded and the official land area occupied by the city, and is an important measure of how cities function. Higher population density enables governments to more easily deliver essential infrastructure and services in urban areas at relatively low cost per capita. However, such benefits do not materialize automatically or inevitably. Whether a city's population dynamics pose challenges or offer opportunities typically depends on the policies in play.
+    footnote: Populations and areas are from CityPopulation.de. Note that the extents used by CityPopulation.de may differ from the AOIs used by the City Scans. The area for Gagarin (Combined) uses the combined areas of each of the six included villages; it does not include the space in between.
+  population_distribution_age_sex:
+    method: This column chart classifies the city's population according to age group, forming the basis of population projections. Populations vary significantly in their proportions of young and old people, with growing populations generally appearing younger, and declining or slowly growing populations generally appearing older.
+    footnote: |
+      Data from WorldPop. Bondarenko, et al, Estimates of total number of people per grid square broken down by gender and age groupings for 51 countries across sub-Saharan Africa in 2020 using Ecopia.AI and Maxar Technologies building footprints, 2020.
+      Reproductive age is defined as 15–49. Working age is defined as 15–64.
+  population_density:
+    method: This map estimates population numbers per 10,000 m^2^ grid cell. It provides a more consistent representation of population distributions across different landscapes than administrative unit counts. Knowing where people are is critical for impact assessments and intervention plans, especially those focused on service delivery, food security, climate change, network systems and natural disasters.
+    footnote: NULL
+  relative_wealth:
+    method: This map shows micro-estimates of wealth and poverty relative to the whole country that cover the populated surface at a 2.4 km^2^ resolution. Many critical policy decisions, from strategic investments to the allocation of humanitarian aid, rely on data about the geographic distribution of wealth and poverty.
+    footnote: Map data from Meta Data for Good.
+economic_activity:
+  economic_hotspots:
+    method: "This map measures the total emissions of nighttime lights from the monthly average of radiance for 2014 through 2022. Nighttime light radiance is a common proxy for economic activity\\: where there is more artificial light, there is generally more commercial activity."
+    footnote: Map data from NOAA, "VIIRS Daily Mosaic".
+  economic_change:
+    method: The map illustrates monthly temporal changes from 2014 to 2022 in the emission of nighttime lights, indicating changes in economic activity. Positive values represent an increase in the intensity of nighttime light emission and, by proxy, economic activity, while negative values represent a decrease in the intensity of nighttime light emission, and economic activity.
+    footnote: Map data from NOAA, "VIIRS Daily Mosaic".
+built_form:
+  wsf:
+    method: NULL
+    footnote: Map data from DLR, 2015, "World Settlement Footprint Evolution - Landsat 5/7 - Global".

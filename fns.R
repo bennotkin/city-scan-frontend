@@ -7,7 +7,7 @@ library(stringr)
 # library(mapview)
 library(dplyr)
 
-# Functions ----
+# Map Functions ----
 # Function for reading rasters with fuzzy names
 # Ideally, though, we would name in a consistent way where this is rendered unnecessary
 fuzzy_read <- function(city_dir, fuzzy_string, FUN = read_raster, path = F, ...) {
@@ -228,3 +228,84 @@ mapshot_styled <- function(map_dynamic, file_suffix, return) {
   # return(map_static)
 }
 
+# Text Functions ----
+read_md <- function(file) {
+  md <- readLines(file)
+  instruction_lines <- 1:grep("CITY CONTENT BEGINS HERE", md)
+  mddf <- tibble(text = md[-instruction_lines]) %>%
+    mutate(
+      # Should maybe use a different header symbol than hashes so that the content itself can use hash
+      # section = case_when(str_detect(text, "^## ") ~ text, T ~ NA_character_),
+      # slide = case_when(str_detect(text, "^### ") ~ text, T ~ NA_character_),
+      section = case_when(str_detect(text, "^//// ") ~ str_extract(text, "^/+ (.*)$", group = T), T ~ NA_character_),
+      slide = case_when(str_detect(text, "^// ") ~ str_extract(text, "^/+ (.*)$", group = T), T ~ NA_character_),
+      .before = 1
+    ) %>% tidyr::fill(section, slide) %>%
+    filter(!str_detect(text, "^/") & !str_detect(text, "^----")) %>%
+    # Do I want to remove header lines? For now, yes
+    filter(!str_detect(text, "^#")) %>%
+    filter(!str_detect(text, "^\\s*$")) %>%
+    filter(!is.na(slide))
+  text_list <- sapply(unique(mddf$section), function(sect) {
+    section_df <- filter(mddf, section == sect)
+    section_list <- sapply(c(unique(section_df$slide)), function(s) {
+      if (s == "empty") return (NULL)
+      slide_text <- filter(section_df, slide == s)$text
+      # if (str_detect(slide_text[1], "^\\s*$")) {
+      #   slide_text <- slide_text[-1]
+      # }
+      # return(list(takeaways = slide_text))
+      return(list(takeaways = slide_text))
+    }, simplify = F)
+    return(section_list)
+  }, simplify = F)
+  return(text_list)
+}
+
+# merge_text_lists <- function(...) {
+#   lists <- c(...)
+#   keys <- unique(names(lists))
+#   merged <- sapply(keys, function(k) {
+#     index <- names(lists) == k
+#     new_list <- c(unlist(lists[index], F, T))
+#     names(new_list) <- str_extract(names(new_list), "([^\\.]+)$", group = T)
+#     unique(names(new_list)) %>%
+#       sapply(function (j) {
+#         index2 <- names(new_list) == j
+#         new_list2 <- c(unlist(new_list[index2], F, T))
+#         names(new_list2) <- str_extract(names(new_list2), "([^\\.]+)$", group = T)
+#         return(new_list2)
+#       }, simplify = F)
+#     return(new_list)
+#   }, simplify = F)
+#   return(merged)
+# }
+
+merge_lists <- function(x, y) {
+  sections <- unique(c(names(x), names(y)))
+  sapply(sections, function(sect) {
+    merged_section <- c(x[[sect]], y[[sect]])
+    slides <- unique(names(merged_section))
+    sapply(slides, function(slide) {
+      merged_slide <- c(x[[sect]][[slide]], y[[sect]][[slide]])
+    }, simplify = F)
+  }, simplify = F)
+}
+
+print_md <- function(x, div_class = NULL) {
+  if (!is.null(div_class)) cat(":::", div_class, "\n")
+  cat(x, sep = "\n")
+  if (!is.null(div_class)) cat(":::")
+}
+
+print_slide_text <- function(slide) {
+  if (!is.null(slide$takeaways)) {
+    print_md(slide$takeaways, div_class = "takeaways")
+    cat("\n")
+  }
+  if (!is.null(slide$method)) {
+    print_md(slide$method, div_class = "method")
+    cat("\n")
+  }
+  if (!is.null(slide$footnote)) print_md(slide$footnote, div_class = "footnote")
+}
