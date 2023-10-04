@@ -45,8 +45,8 @@ layer_params <- read_yaml('layers.yml')
 
 ```{r}
 # Get text
-city_text <- read_md("manual-text.md")
-generic_text <- read_yaml("generic-text.yml")
+city_text <- read_md("text-files/manual-text.md")
+generic_text <- read_yaml("text-files/generic-text.yml")
 slide_texts <- merge_lists(city_text, generic_text)
 ```
 

@@ -1,6 +1,3 @@
----
-title: "Set up scrollytelling"
----
 
 ```{ojs}
 //| output: false
