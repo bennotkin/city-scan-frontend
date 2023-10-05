@@ -3,8 +3,7 @@ title: "Gagarin City Scan Test"
 format:
   html:
     theme: [custom.scss, none]
-slide-level: 3
-editor: visual
+editor: source
 execute:
   echo: false
   output: false
@@ -65,6 +64,9 @@ added_layers <- c()
 ```
 :::
 
+::: topbar
+# {{< meta title >}}
+
 ::: navigation
 ```{r}
 #| output: asis
@@ -77,6 +79,9 @@ anchors <- sections %>% str_extract("^\\s*- (.*$)", group = T) %>% tolower() %>%
 
 paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("- <span id='dynamic-header'>City Scan</span>  &or;", ., sep = "\n") }
 ```
+
+[Inputs version](https://bennotkin.quarto.pub/gagarin-city-scan-form/)
+:::
 :::
 
 ::: text-column
@@ -110,6 +115,7 @@ print_slide_text(slide_texts$setting_the_context$infrastructure_and_service_deli
 #| output: asis
 print_slide_text(slide_texts$demographics$population_growth)
 ```
+
 ### Population Density (chart)
 
 ![](images/oxford-pop-density-scatter.png)

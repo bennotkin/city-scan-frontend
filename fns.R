@@ -244,7 +244,7 @@ read_md <- function(file) {
     filter(!str_detect(text, "^/") & !str_detect(text, "^----")) %>%
     # Do I want to remove header lines? For now, yes
     filter(!str_detect(text, "^#")) %>%
-    filter(!str_detect(text, "^\\s*$")) %>%
+    # filter(!str_detect(text, "^\\s*$")) %>%
     filter(!is.na(slide))
   text_list <- sapply(unique(mddf$section), function(sect) {
     section_df <- filter(mddf, section == sect)

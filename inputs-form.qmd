@@ -10,119 +10,15 @@ execute:
   output: false
 ---
 
-```{ojs}
-//| output: false
 
-// Move this to a separate file so it's out of the way
-
-// import and instantiate the scrollama
-// not sure if install is required, but here is how:
-// `$ npm install scrollama intersection-observer --save`
-scrollama = require("scrollama@3.1.1");
-scroller = scrollama();
-d3 = require("d3");
-
-// Define variables (taken from template, might not need all of them)
-$container = d3.select("main.content");
-$graphic = $container.select(".maps");
-// $chart = $graphic.select("#scrollama-test")
-$text = $container.select(".text-column");
-$step = $text.selectAll("section.level3");
-$layerControl = $graphic.select(".leaflet-control-layers-list");
-$overlaysControl = $layerControl.select(".leaflet-control-layers-overlays");
-
-overlayLayers = Array.prototype.map
-  .call($overlaysControl.node().getElementsByTagName("span"), span => {
-    return(span.textContent.replace(/\s/g, ""))
-  }) // Need to replace white space with nothing because .textContent returns a leading space
-
-// console.log(overlayLayers)
-
-// Hides all legends. I'm not sure why the legends continue to show
-// at the start even when I use `hideGroup`, so this is my workaround
-// (Should use overlayLayers but I don't feel like testng right now)
-arry = Array.from(document.getElementsByClassName("leaflet-control-layers-overlays")[0]
-  .getElementsByTagName("input"));
-arry.forEach(element => element.click())
-
-function checkLayerStatus(spanText) {
-  var inputs = $overlaysControl.node().getElementsByTagName("input")
-  var index = overlayLayers.indexOf(spanText)
-  return(inputs[index].checked)
-}
-function handleStepEnter(response) {
-  // response = { element, direction, index }
-
-  console.log("Enter triggered")
-  console.log(response)
-
-  // console.log(layers)
-  // console.log($overlaysControl.html())
-  // console.log(response.element.id)
-
-  $step.classed("is-active", function (d, i) {
-    return i === response.index;
-  })
-  
-  $graphic.classed("is-active", function (d, i) {
-    var colorRows = [1, 3]
-    return colorRows.includes(response.index)
-  })
-  
-    // This is for testing purposes and requires a level 3 header and a paragraph above the map
-  // var header = $graphic.select("h3")
-  // var mapText = $graphic.select("p")
-  // header.text(response.element.id)
-  
-  var layerIndex = overlayLayers.indexOf(response.element.id)
-  if (layerIndex >= 0) {
-    // This is for testing purposes and requires a level 3 header and a paragraph above the map
-    // mapText.text(response.element.id);
-    console.log(response.element.id + ": " + checkLayerStatus(response.element.id));
-    if (!checkLayerStatus(response.element.id)) {
-      $overlaysControl.node().getElementsByTagName("input")[layerIndex].click()
-    }
-  }
-}
-
-function handleStepExit(response) {
-  console.log("Exit triggered")
-  console.log(response)
-  // { element, index, direction }
-  response.element.classList.remove("is-active");
-  
-  var layerIndex = overlayLayers.indexOf(response.element.id)
-  if (layerIndex >= 0) {
-    console.log(response.element.id + ": " + checkLayerStatus(response.element.id));
-    if (checkLayerStatus(response.element.id)) {
-      $overlaysControl.node().getElementsByTagName("input")[layerIndex].click()
-    }
-  }
-}
-// initialise the library and pass event handlers to 
-function init() {
-  scroller
-    .setup({
-			container: 'main.content', // our outermost scrollytelling element
-			graphic: '.maps', // the graphic
-			text: '.text-column', // the step container
-			step: '.text-column section.level3', // the step elements
-			offset: 0.5, // set the trigger to be 1/2 way down screen
-			debug: false, // display the trigger offset for testing
-    })
-    .onStepEnter(handleStepEnter)
-    .onStepExit(handleStepExit)
-}
-
-init();
-```
+::: setup
+{{< include scrollytelling.qmd >}}
 
 ```{ojs}
 // Object of forms for interactively adding takeaway bullets
 takeaway_inputs = ({})
 ```
 
-::: setup
 ```{r}
 #| include: false
 # Read functions & packages
@@ -168,18 +64,24 @@ added_layers <- c()
 ```
 :::
 
+::: topbar
+# {{< meta title >}}
+
 ::: navigation
 ```{r}
 #| output: asis
 # Dynamically add sections to table of contents ... there's probably a better way?
-sections <- readLines("/Users/bennotkin/Documents/world-bank/crp/city-scans/city-scan-automation/frontend/city-scan-html-sample/gagarin-example.qmd") %>%
+sections <- readLines("/Users/bennotkin/Documents/world-bank/crp/city-scans/city-scan-automation/frontend/city-scan-html-sample/index.qmd") %>%
   subset(str_detect(., "^##")) %>% str_replace("# ", "- ") %>% str_replace_all("#", "  ")
 
 anchors <- sections %>% str_extract("^\\s*- (.*$)", group = T) %>% tolower() %>% str_replace_all(c("[^a-z\\s]" = "", "\\s+" = "-")) %>%
   str_replace("(.*)", "(#\\1)")
 
-paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("- T.O.C.", ., sep = "\n") }
+paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("- <span id='dynamic-header'>City Scan</span>  &or;", ., sep = "\n") }
 ```
+
+[Prewritten](https://bennotkin.quarto.pub/city-scan-html-sample/)
+:::
 :::
 
 ::: text-column

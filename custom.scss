@@ -19,6 +19,7 @@
 $presentation-font-size-root: 11pt;
 $bs-root-font-size: 16px;
 $pale-color: #5a6570;
+$topbar-height: 2rem;
 
 /*-- scss:rules --*/
 // Sets the page to full screen
@@ -35,27 +36,61 @@ $pale-color: #5a6570;
   margin-top: 0;
   margin-bottom: 5vh;
 }
-    
-.navigation {
-  // grid-column: 2 / 3;
-  // grid-row: 1 / 2;
-  // display: flex;
-  // justify-content: end;
+
+#title-block-header {
+  // display: none;
+  // height: $topbar-height;
+  // padding-top: 3px;
+
+  // h1 {font-size: 1.1rem; font-weight:400; text-transform: uppercase;}
+  h1 {display: none;}
+}
+
+.topbar {
+  width: 100%;
+  height: $topbar-height;
+  background-color: white;
+  display: grid;
+  grid-template-columns: 2fr 4fr;
   position: fixed;
-  left: 40%;
   z-index: 1;
   text-align: left;
+  border-bottom: 1px solid black;
+  padding-top: 3px;
+
+h1 {
+  grid-column: 1/2;
+  padding: .25rem .5rem;
+  font-size: 1.1rem; font-weight:400; text-transform: uppercase;
+  margin: 0;
+}
+
+  a {
+    color: black;
+    padding: .25rem .5rem;
+  }
+}
+
+.navigation {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  display: flex;
+  flex-direction: row;
+  // justify-content: end;
+
   
   #dynamic-header{
     text-transform: uppercase;
   }
-  
+
   ul {
-    background: #FFF;
+    // background: #FFF;
     list-style: none;
     margin: 0;
     padding-left: 0;
   }
+
+  > ul > li {padding-top: 0; padding-bottom: 0;}
   
   li {
     color: #000;
@@ -150,7 +185,7 @@ h3  {
   grid-column: 2 / 3;
   grid-row: 1 / 5;
   position: sticky;
-  top: 2rem;
+  top: $topbar-height;
   height: 100vh;
 
   img, .leaflet.html-widget {
@@ -194,7 +229,15 @@ h3  {
   
   h2, h3 {
     color: black;
+    font-weight: 400;
+    font-size: 1.1rem;
   }
+
+  h2 {
+    text-transform: uppercase;
+  }
+  h3 {border-bottom: 1px solid black}
+
 }
 
 #title-block-header {
@@ -220,7 +263,7 @@ h3  {
 
     p {
      font-size: 0.8rem;
-      color:  var($pale-color)
+      color:  $pale-color;
     }
   }
   
