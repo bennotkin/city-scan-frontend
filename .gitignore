@@ -3,3 +3,6 @@
 /*.html
 .Rhistory
 images/*
+_site
+.quarto
+cities
