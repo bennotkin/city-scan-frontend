@@ -75,7 +75,7 @@ sections <- readLines("/Users/bennotkin/Documents/world-bank/crp/city-scans/city
 anchors <- sections %>% str_extract("^\\s*- (.*$)", group = T) %>% tolower() %>% str_replace_all(c("[^a-z\\s]" = "", "\\s+" = "-")) %>%
   str_replace("(.*)", "(#\\1)")
 
-paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("- T.O.C.", ., sep = "\n") }
+paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("- <span id='dynamic-header'>City Scan</span>  &or;", ., sep = "\n") }
 ```
 :::
 

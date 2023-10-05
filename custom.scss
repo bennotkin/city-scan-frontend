@@ -42,8 +42,13 @@ $pale-color: #5a6570;
   // display: flex;
   // justify-content: end;
   position: fixed;
-  left: 50%;
+  left: 40%;
   z-index: 1;
+  text-align: left;
+  
+  #dynamic-header{
+    text-transform: uppercase;
+  }
   
   ul {
     background: #FFF;
@@ -145,7 +150,7 @@ h3  {
   grid-column: 2 / 3;
   grid-row: 1 / 5;
   position: sticky;
-  top: 0;
+  top: 2rem;
   height: 100vh;
 
   img, .leaflet.html-widget {
@@ -201,8 +206,9 @@ h3  {
   grid-column: 1 / 2;
   grid-row: 3 / 5;
 
-  ul {
-    font-size: 1.2em;
+  .takeaways {
+    font-size: 1.1rem;
+    // background: cornsilk;
   }
 
   p {font-size: 1rem;}
@@ -220,12 +226,12 @@ h3  {
   
   // Prevent map from scrolling up too much & ensuring all sections hit scrollama offset point
   section {
-    min-height: 90vh;
+    min-height: 50vh;
     // This is probably an overly complicated way to ensure each slide is vertically centered
     display: flex;
     flex-direction: column;
     justify-content: center;
-  }
+    padding-bottom: 3rem;  }
   > section {
     padding-bottom: 3rem;
     border-bottom: 1px solid black;

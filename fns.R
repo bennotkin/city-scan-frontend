@@ -64,7 +64,7 @@ plot_basemap <- function(basemap_style = "satellite") {
   basemap <-leaflet(
       data = aoi,
       # Need to probably do this with javascript
-      height = "100vh",
+      height = "calc(100vh - 2rem)",
       width = "100%",
       options = leafletOptions(zoomControl = F, zoomSnap = 0.1)) %>% 
     fitBounds(lng1 = unname(aoi_bounds$xmin - (aoi_bounds$xmax - aoi_bounds$xmin)/20),

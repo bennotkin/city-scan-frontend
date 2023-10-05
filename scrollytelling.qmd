@@ -42,8 +42,8 @@ function checkLayerStatus(spanText) {
 function handleStepEnter(response) {
   // response = { element, direction, index }
 
-  console.log("Enter triggered")
-  console.log(response)
+  // console.log("Enter triggered")
+  // console.log(response)
 
   // console.log(layers)
   // console.log($overlaysControl.html())
@@ -67,7 +67,7 @@ function handleStepEnter(response) {
   if (layerIndex >= 0) {
     // This is for testing purposes and requires a level 3 header and a paragraph above the map
     // mapText.text(response.element.id);
-    console.log(response.element.id + ": " + checkLayerStatus(response.element.id));
+    // console.log(response.element.id + ": " + checkLayerStatus(response.element.id));
     if (!checkLayerStatus(response.element.id)) {
       $overlaysControl.node().getElementsByTagName("input")[layerIndex].click()
     }
@@ -75,14 +75,14 @@ function handleStepEnter(response) {
 }
 
 function handleStepExit(response) {
-  console.log("Exit triggered")
-  console.log(response)
+  // console.log("Exit triggered")
+  // console.log(response)
   // { element, index, direction }
   response.element.classList.remove("is-active");
   
   var layerIndex = overlayLayers.indexOf(response.element.id)
   if (layerIndex >= 0) {
-    console.log(response.element.id + ": " + checkLayerStatus(response.element.id));
+    //console.log(response.element.id + ": " + checkLayerStatus(response.element.id));
     if (checkLayerStatus(response.element.id)) {
       $overlaysControl.node().getElementsByTagName("input")[layerIndex].click()
     }
@@ -104,4 +104,41 @@ function init() {
 }
 
 init();
+```
+
+
+```{ojs}
+$section2 = $text.selectAll("section.level2");
+$headerAboveMap = $container
+  .select(".navigation")
+  .select("ul")
+  .select("li")
+  .select("#dynamic-header")
+
+console.log($headerAboveMap)
+
+scrollerSectionTitle = scrollama();
+function init2() {
+  scrollerSectionTitle
+    .setup({
+			// container: 'main.content', // our outermost scrollytelling element
+			// graphic: '.maps', // the graphic
+			// text: '.text-column', // the step container
+			step: '.text-column section.level2', // the step elements
+			offset: 0.5, // set the trigger to be 1/2 way down screen
+			debug: false, // display the trigger offset for testing
+    })
+    .onStepEnter(response => {
+      console.log("ENTERED")
+      var header = $headerAboveMap
+      // var mapText = $graphic.select("p")
+      console.log(response.element.firstElementChild.textContent)
+      console.log(header.text())
+      //.getElementsByTagName("h2"))
+      header.text(response.element.firstElementChild.textContent)
+      // navigation.select("ul").select("li")
+    })
+}
+
+init2();
 ```
