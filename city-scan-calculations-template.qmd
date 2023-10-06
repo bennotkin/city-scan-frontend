@@ -309,7 +309,7 @@ gva_inds <- subset(indicators, str_detect(tolower(Indicator), "gross value added
 extra_inds <- c("Total population", "Employment - Total", "GDP, real, US$ - Total")
 ```
 
-### Population Growth
+### Population Growth2
 ```{r}
 if (in_oxford) {
   pop_growth <- subset(oxford, Location == city & Indicator == "Total population") %>%
@@ -415,7 +415,7 @@ pop_growth %>% mutate(growth_pct = (Population - lag(Population))/lag(Population
 # }
 ```
 
-### Population Density
+### Population Density2
 ```{r}
 density <- subset(oxford, Indicator == "Total population") %>%
   mutate(Group, Location, Population = 1000 * `2021`, .keep = "none")

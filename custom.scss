@@ -239,6 +239,20 @@ h3 {
 .text-column {
   color: darkgrey;
 
+h1 {
+    font-size: 3rem;
+    font-weight: 600;
+    color: #1e90ff;
+    background-image: radial-gradient(dodgerblue 1px, transparent 0);
+    background-size: 10px 10px;
+    height: 10rem;
+    padding: calc(100vh - 10rem) 1.5rem 10rem 1.5rem;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    margin-bottom: -1px;
+    margin-top: 0;
+}
+
   h2,
   h3 {
     color: black;
@@ -333,3 +347,15 @@ h3 {
 .setup section {
   display: none
 }
+
+// .leaflet .info, .leaflet-control-layers, .leaflet-control-layers-expanded, .leaflet-control,
+// .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar
+// {
+	// box-shadow: none;
+    // border-radius: 0;
+    // border: 1px solid grey;
+// }
+
+
+
+

@@ -87,6 +87,8 @@ paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("
 :::
 
 ::: text-column
+# {{< meta title >}}
+
 ## Setting the Context
 
 ### Basic City Information
@@ -111,11 +113,10 @@ print_slide_text(slide_texts$setting_the_context$basic_city_info)
 
 ### Population Growth
 
+<!-- ![](images/oxford-pop-growth.png) -->
 ```{r, output=TRUE}
 ggplotly(pop_growth_plot)
 ```
-
-
 
 ```{r}
 #| output: asis
@@ -291,7 +292,7 @@ added_layers <- c(added_layers, layer_params[["wsf"]]$group)
 print_slide_text(slide_texts$built_form$wsf)
 ```
 
-### Land Cover
+<!-- ### Land Cover -->
 
 ```{r}
 # lc <- fuzzy_read(city_dir, "landcover")
