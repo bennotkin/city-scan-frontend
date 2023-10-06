@@ -42,6 +42,8 @@ useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; I
 layer_params <- read_yaml('layers.yml')
 ```
 
+{{< include city-scan-calculations-template.qmd >}}
+
 ```{r}
 # Get text
 city_text <- read_md("text-files/manual-text.md")
@@ -98,18 +100,22 @@ paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("
 print_slide_text(slide_texts$setting_the_context$basic_city_info)
 ```
 
-### The State of Urban Infrastructure and Service Delivery
+<!-- ### The State of Urban Infrastructure and Service Delivery -->
 
-```{r}
-#| output: asis
-print_slide_text(slide_texts$setting_the_context$infrastructure_and_service_delivery)
-```
+<!-- ```{r} -->
+<!-- #| output: asis -->
+<!-- print_slide_text(slide_texts$setting_the_context$infrastructure_and_service_delivery) -->
+<!-- ``` -->
 
 ## Population and Demographic Trends
 
 ### Population Growth
 
-![](images/oxford-pop-growth.png)
+```{r, output=TRUE}
+ggplotly(pop_growth_plot)
+```
+
+
 
 ```{r}
 #| output: asis
@@ -118,7 +124,10 @@ print_slide_text(slide_texts$demographics$population_growth)
 
 ### Population Density (chart)
 
-![](images/oxford-pop-density-scatter.png)
+<!-- ![](images/oxford-pop-density-scatter.png) -->
+```{r, output=TRUE}
+ggplotly(density_plot + labs(y = "People per square kilometer"))
+```
 
 ```{r}
 #| output: asis
@@ -127,7 +136,10 @@ print_slide_text(slide_texts$demographics$population_density_chart)
 
 ### Population Distribution by Age & Sex
 
-![](images/world-pop-age-sex.png)
+<!-- ![](images/world-pop-age-sex.png) -->
+```{r, output=TRUE}
+ggplotly(pop_age_sex_plot)
+```
 
 ```{r}
 #| output: asis
@@ -146,6 +158,11 @@ all_maps <- add_pop_layer(all_maps)
   # This could be put into the add_*_layer() functions themselves
   # hideGroup("population-density")
 added_layers <- c(added_layers, "population-density")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$demographics$population_density)
 ```
 
 ### Relative Wealth Index
@@ -274,14 +291,6 @@ added_layers <- c(added_layers, layer_params[["wsf"]]$group)
 print_slide_text(slide_texts$built_form$wsf)
 ```
 
-### Now with layers control
-
-Add text
-
-::: footnote
-See https://rstudio.github.io/leaflet/showhide.html
-:::
-
 ### Land Cover
 
 ```{r}
@@ -319,12 +328,6 @@ See https://rstudio.github.io/leaflet/showhide.html
 # add_lc_layer <- create_layer_function(data = lc, yaml_key = "lc", color_scale = lc_colors)
 # add_lc_layer(all_maps)
 ```
-
-## Another section
-
-### And a "slide" within it
-
-Text
 :::
 
 ::: maps
