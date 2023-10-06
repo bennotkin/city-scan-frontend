@@ -6,3 +6,6 @@ images/*
 _site
 .quarto
 cities
+plots
+scratchheap
+city-scan-input-results.json
