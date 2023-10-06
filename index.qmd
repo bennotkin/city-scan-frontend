@@ -42,8 +42,6 @@ useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; I
 layer_params <- read_yaml('layers.yml')
 ```
 
-{{< include city-scan-calculations-template.qmd >}}
-
 ```{r}
 # Get text
 city_text <- read_md("text-files/manual-text.md")
@@ -115,7 +113,8 @@ print_slide_text(slide_texts$setting_the_context$basic_city_info)
 
 <!-- ![](images/oxford-pop-growth.png) -->
 ```{r, output=TRUE}
-ggplotly(pop_growth_plot)
+# saveRDS(pop_growth_plot, "plots/pop-growth.rds")
+ggplotly(readRDS("plots/pop-growth.rds"))
 ```
 
 ```{r}
@@ -127,7 +126,8 @@ print_slide_text(slide_texts$demographics$population_growth)
 
 <!-- ![](images/oxford-pop-density-scatter.png) -->
 ```{r, output=TRUE}
-ggplotly(density_plot + labs(y = "People per square kilometer"))
+# saveRDS(density_plot, "plots/density.rds")
+ggplotly(readRDS("plots/density.rds") + labs(y = "People per square kilometer"))
 ```
 
 ```{r}
@@ -139,7 +139,8 @@ print_slide_text(slide_texts$demographics$population_density_chart)
 
 <!-- ![](images/world-pop-age-sex.png) -->
 ```{r, output=TRUE}
-ggplotly(pop_age_sex_plot)
+# saveRDS(pop_age_sex_plot, "plots/age-sex-distribution.rds")
+ggplotly(readRDS("plots/age-sex-distribution.rds"))
 ```
 
 ```{r}
