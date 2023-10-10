@@ -6,6 +6,7 @@ library(yaml)
 library(stringr)
 # library(mapview)
 library(dplyr)
+library(plotly)
 
 # Map Functions ----
 # Function for reading rasters with fuzzy names

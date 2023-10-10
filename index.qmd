@@ -71,7 +71,7 @@ added_layers <- c()
 ```{r}
 #| output: asis
 # Dynamically add sections to table of contents ... there's probably a better way?
-sections <- readLines("/Users/bennotkin/Documents/world-bank/crp/city-scans/city-scan-automation/frontend/city-scan-html-sample/index.qmd") %>%
+sections <- readLines("index.qmd") %>%
   subset(str_detect(., "^##")) %>% str_replace("# ", "- ") %>% str_replace_all("#", "  ")
 
 anchors <- sections %>% str_extract("^\\s*- (.*$)", group = T) %>% tolower() %>% str_replace_all(c("[^a-z\\s]" = "", "\\s+" = "-")) %>%
