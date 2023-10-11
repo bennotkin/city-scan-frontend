@@ -20,18 +20,20 @@ RUN /rocker_scripts/install_quarto.sh
 
 
 RUN install2.r \
-    rmarkdown \
-    knitr \
     quarto \
-    terra \
-    sf \
-    leaflet \
-    yaml \
-    stringr \
-    dplyr
-
-RUN install2.r \
     plotly
+
+## R's X11 runtime dependencies
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    libx11-6 \
+    libxss1 \
+    libxt6 \
+    libxext6 \
+    libsm6 \
+    libice6 \
+    xdg-utils \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /home
 COPY fns.R fns.R
@@ -46,4 +48,10 @@ COPY images images
 COPY cities cities
 COPY plots plots
 
+RUN mkdir mount
+
 CMD ["bash"]
+
+# Docker commands to build and run Docker image
+# docker build -t nalgene .
+# docker run -it --rm -v "$(pwd)"/mount:/home/mount nalgene
