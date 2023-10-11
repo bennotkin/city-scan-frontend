@@ -1,0 +1,19 @@
+# Attempt at alternate Dockerfile that reduces size and build time
+# For R & Docker primer, see http://jsta.github.io/r-docker-tutorial/
+
+# Install R base image from Rocker (builds on Ubuntu 22.04 LTS)
+# https://github.com/rocker-org/rocker-versioned2/blob/master/dockdockeerfiles/Dockerfile_r-ver_4.0.2 
+ARG R_VERSION=4.3.1
+FROM rocker/r-ver:${R_VERSION}
+LABEL name=pip-api \
+  version=0.0.1 \
+  authors="Ben Notkin" \
+  maintainer="bnotkin@worldbank.org" \
+  organization="World Bank Group"
+
+# RUN apt-get update && apt-get install -y vim
+
+COPY install_tidyverse.sh rocker_scripts/install_tidyverse.sh
+# RUN /rocker_scripts/install_tidyverse.sh
+
+CMD ["bash"]
