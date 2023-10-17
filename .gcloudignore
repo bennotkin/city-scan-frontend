@@ -1,0 +1,10 @@
+.gcloudignore
+.git
+/gce-test
+/gcsfuse-tutorial
+/other-cities
+/_site
+/index_files
+/other (review for deletion)
+/scratchheap
+/inputs-form_files

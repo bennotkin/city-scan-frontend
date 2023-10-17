@@ -35,22 +35,57 @@ RUN apt-get update \
     xdg-utils \
   && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /home
-COPY fns.R fns.R
-COPY index.qmd index.qmd
-COPY inputs-form.qmd inputs-form.qmd
-COPY layers.yml layers.yml
-COPY city_inputs.yml city_inputs.yml
-COPY scrollytelling.qmd scrollytelling.qmd
-COPY custom.scss custom.scss
-COPY text-files text-files
-COPY images images
-COPY cities cities
-COPY plots plots
+# Taken from https://cloud.google.com/run/docs/tutorials/network-filesystems-fuse#cloudrun_fs_dockerfile-nodejs
+# except https instead of http, per $kojima-takeo's finding at https://github.com/GoogleCloudPlatform/gcsfuse/issues/1424
+RUN apt-get update && apt-get install -y \
+    curl \
+    gnupg \
+    lsb-release \
+    tini && \
+    echo "deb https://packages.cloud.google.com/apt gcsfuse-buster main" > /etc/apt/sources.list.d/gcsfuse.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+    apt-get update && \
+    apt-get install -y gcsfuse && \
+    apt-get clean
 
-RUN mkdir mount
+# Set fallback mount directory
+ENV MNT_DIR /mnt/gcs
 
-CMD ["bash"]
+# Copy local code to the container image.
+ENV APP_HOME /home
+WORKDIR $APP_HOME
+COPY . ./
+
+# Install production dependencies.
+# RUN pip install -r requirements.txt
+
+# Ensure the script is executable
+RUN chmod +x /home/gcsfuse_run.sh
+
+# Consider both cloning from Github & moving this all to a mounted drive instead
+# WORKDIR /home
+# COPY fns.R fns.R
+# COPY index.qmd index.qmd
+# COPY inputs-form.qmd inputs-form.qmd
+# COPY layers.yml layers.yml
+# COPY city_inputs.yml city_inputs.yml
+# COPY scrollytelling.qmd scrollytelling.qmd
+# COPY custom.scss custom.scss
+# COPY text-files text-files
+# COPY images images
+# COPY cities cities
+# COPY plots plots
+
+# RUN mkdir mount
+
+# CMD ["bash"]
+
+# Use tini to manage zombie processes and signal forwarding
+# https://github.com/krallin/tini
+ENTRYPOINT ["/usr/bin/tini", "--"] 
+
+# Pass the startup script as arguments to Tini
+CMD ["/home/gcsfuse_run.sh"]
 
 # Docker commands to build and run Docker image
 # docker build -t nalgene .
