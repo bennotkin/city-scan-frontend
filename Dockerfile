@@ -4,11 +4,11 @@
 # https://github.com/rocker-org/rocker-versioned2/blob/master/dockdockeerfiles/Dockerfile_r-ver_4.0.2 
 ARG R_VERSION=4.3.1
 FROM rocker/r-ver:${R_VERSION}
-LABEL name=pip-api \
-  version=0.0.1 \
+LABEL name=nalgene \
   authors="Ben Notkin" \
   maintainer="bnotkin@worldbank.org" \
-  organization="World Bank Group"
+  organization="World Bank Group" \
+  description="Renders City Resilience Program City Scans"
 
 # While rocker has specific images for tidyverse and geospatial, they are not arm64 compatible
 RUN /rocker_scripts/install_tidyverse.sh
@@ -17,11 +17,6 @@ RUN /rocker_scripts/install_python.sh
 RUN /rocker_scripts/install_pandoc.sh
 RUN /rocker_scripts/install_jupyter.sh
 RUN /rocker_scripts/install_quarto.sh
-
-
-RUN install2.r \
-    quarto \
-    plotly
 
 ## R's X11 runtime dependencies
 RUN apt-get update \
@@ -35,6 +30,7 @@ RUN apt-get update \
     xdg-utils \
   && rm -rf /var/lib/apt/lists/*
 
+# Google Cloud Storage FUSE
 # Taken from https://cloud.google.com/run/docs/tutorials/network-filesystems-fuse#cloudrun_fs_dockerfile-nodejs
 # except https instead of http, per $kojima-takeo's finding at https://github.com/GoogleCloudPlatform/gcsfuse/issues/1424
 RUN apt-get update && apt-get install -y \
@@ -48,19 +44,17 @@ RUN apt-get update && apt-get install -y \
     apt-get install -y gcsfuse && \
     apt-get clean
 
+# Install remaining R packages
+RUN install2.r \
+    quarto \
+    plotly
+
 # Set fallback mount directory
-ENV MNT_DIR /mnt/gcs
+ENV MNT_DIR /home/mnt
 
 # Copy local code to the container image.
-ENV APP_HOME /home
-WORKDIR $APP_HOME
+WORKDIR /home
 COPY . ./
-
-# Install production dependencies.
-# RUN pip install -r requirements.txt
-
-# Ensure the script is executable
-RUN chmod +x /home/gcsfuse_run.sh
 
 # Consider both cloning from Github & moving this all to a mounted drive instead
 # WORKDIR /home
@@ -76,9 +70,14 @@ RUN chmod +x /home/gcsfuse_run.sh
 # COPY cities cities
 # COPY plots plots
 
-# RUN mkdir mount
+# Ensure the scripts are executable
+# For Google Gloud
+RUN chmod +x /home/gcsfuse_run.sh
+# For local runs
+RUN chmod +x /home/local_run.sh
 
-# CMD ["bash"]
+# Create mount directory for job
+RUN mkdir -p $MNT_DIR
 
 # Use tini to manage zombie processes and signal forwarding
 # https://github.com/krallin/tini
@@ -87,6 +86,7 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 # Pass the startup script as arguments to Tini
 CMD ["/home/gcsfuse_run.sh"]
 
-# Docker commands to build and run Docker image
+# Docker commands to build and run Docker image locally
 # docker build -t nalgene .
-# docker run -it --rm -v "$(pwd)"/mount:/home/mount nalgene
+# docker run -it --rm -v "$(pwd)"/mnt:/home/mnt nalgene bash
+# docker run -it --rm -v "$(pwd)"/mnt:/home/mnt nalgene local_run.sh

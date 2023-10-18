@@ -11,17 +11,16 @@ library(plotly)
 # Map Functions ----
 # Function for reading rasters with fuzzy names
 # Ideally, though, we would name in a consistent way where this is rendered unnecessary
-fuzzy_read <- function(city_dir, fuzzy_string, FUN = read_raster, path = F, ...) {
-  city_folder <- paste0(city_dir, "output")
-  file <- list.files(city_folder) %>% subset(str_detect(., fuzzy_string)) %>%
+fuzzy_read <- function(spatial_dir, fuzzy_string, FUN = read_raster, path = F, ...) {
+  file <- list.files(spatial_dir) %>% subset(str_detect(., fuzzy_string)) %>%
     str_extract("^[^\\.]*") %>% unique()
-  if (length(file) > 1) warning(paste("Too many", fuzzy_string, "files in", city_folder))
-  if (length(file) < 1) warning(paste("No", fuzzy_string, "file in", city_folder))
+  if (length(file) > 1) warning(paste("Too many", fuzzy_string, "files in", spatial_dir))
+  if (length(file) < 1) warning(paste("No", fuzzy_string, "file in", spatial_dir))
   if (length(file) == 1) {
     if (!path) {
-      content <- suppressMessages(FUN(city_folder, file, ...))
+      content <- suppressMessages(FUN(spatial_dir, file, ...))
     } else {
-      content <- suppressMessages(FUN(paste(city_folder, file, sep = "/"), ...))
+      content <- suppressMessages(FUN(paste(spatial_dir, file, sep = "/"), ...))
     }
     return(content)
   } else {

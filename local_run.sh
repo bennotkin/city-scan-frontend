@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-echo "Mounting GCS Fuse."
-gcsfuse --debug_gcs --debug_fuse $BUCKET $MNT_DIR 
-echo "Mounting completed: $BUCKET to $MNT_DIR"
+echo "Mounted to $MNT_DIR"
+
+mkdir -p $MNT_DIR/input
+mkdir -p $MNT_DIR/output
 
 # Instead of moving the files afterward, it might make sense to have a site folder that I build from
 quarto render index.qmd

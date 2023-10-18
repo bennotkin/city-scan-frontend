@@ -9,3 +9,5 @@ cities
 plots
 scratchheap
 city-scan-input-results.json
+/mnt
+!/mnt/README.md

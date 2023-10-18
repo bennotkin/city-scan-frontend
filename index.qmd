@@ -19,14 +19,15 @@ execute:
 # devtools::install_github('rstudio/leaflet')
 source("fns.R")
 
+input_dir <- paste0("mnt/input/")
+
 # City parameters
-city_params <- read_yaml("city_inputs.yml")
+city_params <- read_yaml(paste0(input_dir, "city_inputs.yml"))
 # cities <- list.files("cities")
 city <- city_params$city_name
 city_string <- tolower(city) %>% stringr::str_replace_all(" ", "-")
-city_dir <- paste0("cities/", city_string, "/")
-output_dir <- paste0(city_dir, "styled-maps/")
-# raster_dir <- paste0(city_dir, "/output")
+output_dir <- "styled-maps/"
+spatial_dir <- paste0(input_dir, "spatial/")
 country <- city_params$country
 
 # Visualization parameters
@@ -44,7 +45,7 @@ layer_params <- read_yaml('layers.yml')
 
 ```{r}
 # Get text
-city_text <- read_md("text-files/manual-text.md")
+city_text <- read_md("mnt/input/text-files/manual-text.md")
 generic_text <- read_yaml("text-files/generic-text.yml")
 slide_texts <- merge_lists(city_text, generic_text)
 ```
@@ -53,7 +54,7 @@ slide_texts <- merge_lists(city_text, generic_text)
 #| include: false
 
 # Define the AOI
-aoi <- st_read(paste0(city_dir, "AOI"))
+aoi <- st_read(paste0(input_dir, "AOI"))
 aoi_bounds <- st_bbox(aoi)
 
 # Inititate the map here, will build on it in each "slide"
@@ -153,7 +154,7 @@ print_slide_text(slide_texts$demographics$population_distribution_age_sex)
 ```{r}
 #| include: false
 # Read population data
-pop <- fuzzy_read(city_dir, "population")
+pop <- fuzzy_read(spatial_dir, "population")
 add_pop_layer <- create_layer_function(data = pop, yaml_key = "population")
 
 all_maps <- add_pop_layer(all_maps)
@@ -173,12 +174,12 @@ print_slide_text(slide_texts$demographics$population_density)
 #| include: false
 # Read RWI
 rwi <-
-  st_read(paste0(city_dir, "output/relative_wealth_index"), quiet = T) %>%
+  st_read(paste0(spatial_dir, "relative_wealth_index"), quiet = T) %>%
   select(values = rwi, long = longitude, lat = latitude)
 
 # # Using terra intead of sf for consistency
 # # Except this doesn't work well because there are multiple value columns so it gets complicated to use programmatically 
-# rwi <- vect(paste0(city_dir, "output/relative_wealth_index"))
+# rwi <- vect(paste0(spatial_dir, "relative_wealth_index"))
 
 # rwi_range <- max(c(abs(min(rwi$values)), max(rwi$values))) %>% {c(-., 0, .)}
 
@@ -248,7 +249,7 @@ print_slide_text(slide_texts$demographics$relative_wealth)
 ### Economic Hotspots
 
 ```{r}
-economic_activity <- fuzzy_read(city_dir, "avg_rad_sum")
+economic_activity <- fuzzy_read(spatial_dir, "avg_rad_sum")
 
 add_economic_activity_layer <- create_layer_function(
   data = economic_activity, yaml_key = "economic-activity",
@@ -265,7 +266,7 @@ print_slide_text(slide_texts$economic_activity$economic_hotspots)
 ### Change in Economic Hotspots
 
 ```{r}
-economic_change <- fuzzy_read(city_dir, "linfit")
+economic_change <- fuzzy_read(spatial_dir, "linfit")
 add_economic_change_layer <- create_layer_function(data = economic_change, yaml_key = "economic-change")
 all_maps <- add_economic_change_layer(all_maps)
 added_layers <- c(added_layers, layer_params[["economic-change"]]$group)
@@ -281,7 +282,7 @@ print_slide_text(slide_texts$economic_activity$economic_change)
 ### Urban Extent and Change
 
 ```{r}
-wsf <- fuzzy_read(city_dir, "WSF.*4326")
+wsf <- fuzzy_read(spatial_dir, "WSF.*4326")
 values(wsf)[values(wsf) == 0] <- NA
 add_wsf_layer <- create_layer_function(data = wsf, yaml_key = "wsf")
 all_maps <- add_wsf_layer(all_maps)
@@ -296,7 +297,7 @@ print_slide_text(slide_texts$built_form$wsf)
 <!-- ### Land Cover -->
 
 ```{r}
-# lc <- fuzzy_read(city_dir, "landcover")
+# lc <- fuzzy_read(spatial_dir, "landcover")
 
 #   lc_values <- c(
 #     # 'No data' = 0,

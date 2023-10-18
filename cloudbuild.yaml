@@ -2,16 +2,17 @@ steps:
 # Docker Pull (see https://cloud.google.com/build/docs/optimize-builds/speeding-up-builds)
 - name: 'gcr.io/cloud-builders/docker'
   entrypoint: 'bash'
-  args: ['-c', 'docker pull us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/filesystem-app:latest || exit 0']
+  args: ['-c', 'docker pull us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/nalgene:latest || exit 0']
 # Docker Build
 - name: 'gcr.io/cloud-builders/docker'
   args: [
             'build',
-            '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/filesystem-app:latest',
-            '--cache-from', 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/filesystem-app:latest',
+            '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/nalgene:latest',
+            '--cache-from', 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/nalgene:latest',
             '.'
         ]
 # Docker Push (see https://cloud.google.com/build/docs/configuring-builds/create-basic-configuration)
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/filesystem-app']
-images: ['us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/filesystem-app:latest']
+  args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/cloud-run-source-deploy/nalgene']
+# This may be the same as docker push above
+# images: ['us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/nalgene:latest']

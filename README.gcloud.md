@@ -87,7 +87,7 @@ These variables are helpful for all of the succeeding Google Cloud commands
 PROJECT=city-scan-gee-test
 REPO=cloud-run-source-deploy
 BUCKET=crp-city-scan-text-bucket
-IMAGE=filesystem-app
+IMAGE=nalgene
 JOB=job-the-first
 ```
 
@@ -128,7 +128,8 @@ gcloud builds submit --config cloudbuild.yaml
 #     --update-env-vars BUCKET=$BUCKET
 ```
 
-Local: Away from Google Cloud, if you just want to build the container locally, you could simply run `docker build -t nalgene .` where `nalgene` is the image name and `.` indicates the `Dockerfile` is in working directory.
+#### Local
+Away from Google Cloud, if you just want to build the container locally, you could simply run `docker build -t nalgene .` where `nalgene` is the image name and `.` indicates the `Dockerfile` is in working directory.
 
 ### Job creation and execution
 *Taken from [https://cloud.google.com/run/docs/create-jobs](https://cloud.google.com/run/docs/create-jobs).*
@@ -150,4 +151,7 @@ gcloud run jobs update $JOB \
 gcloud run jobs execute $JOB
 ```
 
-Local: To run the container locally, use `docker run -it --rm -v "$(pwd)"/mnt:/mnt/gcs nalgene bash` *(!This needs to be updated with the actual mount locations, internally and externally)*. The `bash` at the end of the command tells docker to not use the container's default command, which would unsuccessfully connect to Google Cloud Storage, and thus fail, and instead simply create an interactive shell session inside the container. From here, simply render the document, (`quarto render index.qmd`) and then copy the files to the mount directory: `cp index.html /mnt/gcs/index.html && cp -r index_files /mnt/gcs`. *(!I should make a separate shell script for locally running.)*
+#### Local
+To run the container locally, use `docker run --rm -v "$(pwd)"/mnt:/home/mnt nalgene /home/local_run.sh` to render the document. The `/home/local_run.sh` at the end of the command tells docker to not use the container's default command, which would unsuccessfully connect to Google Cloud Storage, and thus fail, and instead use the local run script.
+
+Alternatively, you could interactively run the container using `docker run -it --rm -v "$(pwd)"/mnt:/home/mnt nalgene bash`.
