@@ -79,6 +79,9 @@ RUN chmod +x /home/local_run.sh
 # Create mount directory for job
 RUN mkdir -p $MNT_DIR
 
+# Write environment variable CITY_DIR to TXT file for use by R
+RUN $CITY_DIR >> city-dir.txt
+
 # Use tini to manage zombie processes and signal forwarding
 # https://github.com/krallin/tini
 ENTRYPOINT ["/usr/bin/tini", "--"] 

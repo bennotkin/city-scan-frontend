@@ -19,15 +19,18 @@ execute:
 # devtools::install_github('rstudio/leaflet')
 source("fns.R")
 
-input_dir <- paste0("mnt/input/")
+city_dir <- paste0("mnt/", readLines("city-dir.txt"), "/")
+user_input_dir <- paste0(city_dir, "01-user-input/")
+process_output_dir <- paste0(city_dir, "02-process-output/")
+spatial_dir <- paste0(process_output_dir, "spatial/")
+output_dir <- paste0(city_dir, "03-render-output/")
+styled_maps_dir <- "styled-maps/"
 
 # City parameters
-city_params <- read_yaml(paste0(input_dir, "city_inputs.yml"))
+city_params <- read_yaml(paste0(user_input_dir, "city_inputs.yml"))
 # cities <- list.files("cities")
 city <- city_params$city_name
 city_string <- tolower(city) %>% stringr::str_replace_all(" ", "-")
-output_dir <- "styled-maps/"
-spatial_dir <- paste0(input_dir, "spatial/")
 country <- city_params$country
 
 # Visualization parameters
@@ -45,7 +48,7 @@ layer_params <- read_yaml('layers.yml')
 
 ```{r}
 # Get text
-city_text <- read_md("mnt/input/text-files/manual-text.md")
+city_text <- read_md(paste0(user_input_dir, "text-files/manual-text.md"))
 generic_text <- read_yaml("text-files/generic-text.yml")
 slide_texts <- merge_lists(city_text, generic_text)
 ```
@@ -54,7 +57,7 @@ slide_texts <- merge_lists(city_text, generic_text)
 #| include: false
 
 # Define the AOI
-aoi <- st_read(paste0(input_dir, "AOI"))
+aoi <- st_read(paste0(user_input_dir, "AOI"))
 aoi_bounds <- st_bbox(aoi)
 
 # Inititate the map here, will build on it in each "slide"

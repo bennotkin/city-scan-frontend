@@ -86,9 +86,13 @@ These variables are helpful for all of the succeeding Google Cloud commands
 # Set bucket and project variables
 PROJECT=city-scan-gee-test
 REPO=cloud-run-source-deploy
-BUCKET=crp-city-scan-text-bucket
+BUCKET=crp-city-scan
 IMAGE=nalgene
-JOB=job-the-first
+JOB=frontend
+CITY=kenya-mombasa
+MONTH=2023-10
+# The city directory is the directory within the mount directory for the specific city
+CITY_DIR=$MONTH-$CITY
 ```
 
 ### Google Cloud Storage
@@ -99,7 +103,19 @@ Before building the container and deploying to Google Cloud, we need to create t
 ```sh
 # Create a bucket (here I am using us-central1 as the location; could choose other options)
 gsutil mb -l us-central1 gs://$BUCKET
+```
 
+Within the bucket, make a subdirectory for each city (we may want to go to one bucket per city in the end), with the naming format YYYY-MM-country-city
+```sh
+mkdir -p mnt/$CITY_DIR
+mkdir -p mnt/$CITY_DIR/01-user-input
+mkdir -p mnt/$CITY_DIR/02-process-output
+mkdir -p mnt/$CITY_DIR/03-render-output
+gsutil -m rsync -r  mnt/$CITY_DIR gs://$BUCKET/$CITY_DIR
+```
+
+### Service account
+```sh
 # Create service account `fs-identiy` to "serve as the service identity"
 # For explanation, see https://cloud.google.com/run/docs/securing/service-identity
 gcloud iam service-accounts create fs-identity
@@ -128,8 +144,8 @@ gcloud builds submit --config cloudbuild.yaml
 #     --update-env-vars BUCKET=$BUCKET
 ```
 
-#### Local
-Away from Google Cloud, if you just want to build the container locally, you could simply run `docker build -t nalgene .` where `nalgene` is the image name and `.` indicates the `Dockerfile` is in working directory.
+#### Building container locally
+Away from Google Cloud, if you just want to build the container locally, you could simply run `docker build -t $IMAGE .` where `$IMAGE` is the image to be run and `.` indicates the `Dockerfile` is in working directory.
 
 ### Job creation and execution
 *Taken from [https://cloud.google.com/run/docs/create-jobs](https://cloud.google.com/run/docs/create-jobs).*
@@ -139,19 +155,29 @@ Away from Google Cloud, if you just want to build the container locally, you cou
 gcloud run jobs create $JOB \
   --image us-central1-docker.pkg.dev/$PROJECT/$REPO/$IMAGE:latest \
   --max-retries 0 \
-  --task-timeout 20m
+  --task-timeout 20m \
+	--memory 2Gi
 
 # Update the job with new conditions
 # The default memory of 512 MiB is insufficient; how do I know how much is necessary?
 gcloud run jobs update $JOB \
-  --update-env-vars BUCKET=$BUCKET
+  --update-env-vars BUCKET=$BUCKET \
   --memory 2Gi
 
 # Execute the job
-gcloud run jobs execute $JOB
+# gcloud run jobs execute $JOB
+gcloud beta run jobs execute $JOB \
+	--update-env-vars CITY_DIR=$MONTH-$CITY
 ```
 
-#### Local
-To run the container locally, use `docker run --rm -v "$(pwd)"/mnt:/home/mnt nalgene /home/local_run.sh` to render the document. The `/home/local_run.sh` at the end of the command tells docker to not use the container's default command, which would unsuccessfully connect to Google Cloud Storage, and thus fail, and instead use the local run script.
+#### Running container locally
+To run the container locally, use `docker run --rm -v "$(pwd)"/mnt:/home/mnt -e CITY_DIR=$CITY_DIR $IMAGE /home/local_run.sh` to render the document:
+- `--rm` tells docker to remove the container after the run completes
+- `-v "$(pwd)"/mnt:/home/mnt` mounts `/home/mnt` inside the directory to `mnt` in the working directory
+- `-e CITY_DIR=$CITY_DIR` sets an environment variable `CITY_DIR` to the city-specific directory in the mount directory (see [Set environment variables](#set-environment-variables) above)
+- `$IMAGE` is the name of the image to be run
+- `/home/local_run.sh` at the end of the command tells docker to not use the container's default command, which would unsuccessfully connect to Google Cloud Storage, and thus fail, and instead use the local run script
 
-Alternatively, you could interactively run the container using `docker run -it --rm -v "$(pwd)"/mnt:/home/mnt nalgene bash`.
+Alternatively, you could interactively run the container using `docker run -it --rm -v "$(pwd)"/mnt:/home/mnt -e CITY_DIR=$MONTH-$CITY $IMAGE bash`:
+- `-it` tells docker to run the container interactively
+- `bash` replaces `/home/local_run.sh` to tell docker to simply enter a shell session instead of running a script 
