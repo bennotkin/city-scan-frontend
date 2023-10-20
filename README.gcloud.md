@@ -105,7 +105,8 @@ Before building the container and deploying to Google Cloud, we need to create t
 gsutil mb -l us-central1 gs://$BUCKET
 ```
 
-Within the bucket, make a subdirectory for each city (we may want to go to one bucket per city in the end), with the naming format YYYY-MM-country-city
+Within the bucket, make a subdirectory for each city (we may want to go to one bucket per city in the end), with the naming format YYYY-MM-country-city. We use `gsutil rsync` to match the contents of the bucket to `mnt/`. (See `rsync` [documentation](https://cloud.google.com/storage/docs/gsutil/commands/rsync).)
+
 ```sh
 mkdir -p mnt/$CITY_DIR
 mkdir -p mnt/$CITY_DIR/01-user-input
@@ -167,7 +168,7 @@ gcloud run jobs update $JOB \
 # Execute the job
 # gcloud run jobs execute $JOB
 gcloud beta run jobs execute $JOB \
-	--update-env-vars CITY_DIR=$MONTH-$CITY
+	--update-env-vars CITY_DIR=$CITY_DIR
 ```
 
 #### Running container locally
@@ -178,6 +179,6 @@ To run the container locally, use `docker run --rm -v "$(pwd)"/mnt:/home/mnt -e 
 - `$IMAGE` is the name of the image to be run
 - `/home/local_run.sh` at the end of the command tells docker to not use the container's default command, which would unsuccessfully connect to Google Cloud Storage, and thus fail, and instead use the local run script
 
-Alternatively, you could interactively run the container using `docker run -it --rm -v "$(pwd)"/mnt:/home/mnt -e CITY_DIR=$MONTH-$CITY $IMAGE bash`:
+Alternatively, you could interactively run the container using `docker run -it --rm -v "$(pwd)"/mnt:/home/mnt -e CITY_DIR=$CITY_DIR $IMAGE bash`:
 - `-it` tells docker to run the container interactively
 - `bash` replaces `/home/local_run.sh` to tell docker to simply enter a shell session instead of running a script 
