@@ -53,28 +53,15 @@ RUN install2.r \
 ENV MNT_DIR /home/mnt
 
 # Copy local code to the container image.
+# Consider both cloning from Github & moving this all to a mounted drive instead
 WORKDIR /home
 COPY . ./
 
-# Consider both cloning from Github & moving this all to a mounted drive instead
-# WORKDIR /home
-# COPY fns.R fns.R
-# COPY index.qmd index.qmd
-# COPY inputs-form.qmd inputs-form.qmd
-# COPY layers.yml layers.yml
-# COPY city_inputs.yml city_inputs.yml
-# COPY scrollytelling.qmd scrollytelling.qmd
-# COPY custom.scss custom.scss
-# COPY text-files text-files
-# COPY images images
-# COPY cities cities
-# COPY plots plots
-
 # Ensure the scripts are executable
 # For Google Gloud
-RUN chmod +x /home/gcsfuse_run.sh
+RUN chmod +x /home/scripts/gcsfuse_run.sh
 # For local runs
-RUN chmod +x /home/local_run.sh
+RUN chmod +x /home/scripts/local_run.sh
 
 # Create mount directory for job
 RUN mkdir -p $MNT_DIR
@@ -87,9 +74,10 @@ RUN $CITY_DIR >> city-dir.txt
 ENTRYPOINT ["/usr/bin/tini", "--"] 
 
 # Pass the startup script as arguments to Tini
-CMD ["/home/gcsfuse_run.sh"]
+CMD ["/home/scripts/gcsfuse_run.sh"]
 
 # Docker commands to build and run Docker image locally
 # docker build -t nalgene .
-# docker run -it --rm -v "$(pwd)"/mnt:/home/mnt nalgene bash
-# docker run -it --rm -v "$(pwd)"/mnt:/home/mnt nalgene local_run.sh
+# docker run -it --rm -v "$(pwd)"/mnt:/home/mnt -e CITY_DIR=$CITY_DIR nalgene bash
+# docker run -it --rm -v "$(pwd)"/mnt:/home/mnt -e CITY_DIR=$CITY_DIR nalgene scripts/local_run.sh
+# where $CITY_DIR is the city-specific directory in mnt/ (e.g., 2023-10-kenya-mombasa/)

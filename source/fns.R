@@ -89,7 +89,7 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
 
   # Override the layers.yaml parameters with arguments provided to ...
   # Parameters include bins, breaks, center, color_scale, domain, labFormat, and palette
-  layer_params <- read_yaml('layers.yml')
+  layer_params <- read_yaml('source/layers.yml')
   yaml_params <- layer_params[[yaml_key]]
   new_params <- list(...)
   kept_params <- yaml_params[!names(yaml_params) %in% names(new_params)]
@@ -223,7 +223,7 @@ add_aoi <- function(map, data = aoi, color = 'black', weight = 3, fill = F, dash
 mapshot_styled <- function(map_dynamic, file_suffix, return) {
   mapview::mapshot(map_dynamic,
           remove_controls = c('zoomControl'),
-          file = paste0(output_dir, city_string, '-', file_suffix, '.png'),
+          file = paste0(styled_maps_dir, city_string, '-', file_suffix, '.png'),
           vheight = vheight, vwidth = vwidth, useragent = useragent)
   # return(map_static)
 }

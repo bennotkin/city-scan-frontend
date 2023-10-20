@@ -2,7 +2,7 @@
 title: "Gagarin City Scan Test"
 format:
   html:
-    theme: [custom.scss, none]
+    theme: [source/custom.scss, none]
 editor: source
 execute:
   echo: false
@@ -10,21 +10,21 @@ execute:
 ---
 
 ::: setup
-{{< include scrollytelling.qmd >}}
+{{< include source/scrollytelling.qmd >}}
 
 ```{r}
 #| include: false
 # Read functions & packages
 # Only the github version of leaflet supports terra, in place of raster, which is now required as sp (on which raster depends) is being deprecated
 # devtools::install_github('rstudio/leaflet')
-source("fns.R")
+source("source/fns.R")
 
 city_dir <- paste0("mnt/", readLines("city-dir.txt"), "/")
 user_input_dir <- paste0(city_dir, "01-user-input/")
 process_output_dir <- paste0(city_dir, "02-process-output/")
 spatial_dir <- paste0(process_output_dir, "spatial/")
 output_dir <- paste0(city_dir, "03-render-output/")
-styled_maps_dir <- "styled-maps/"
+styled_maps_dir <- "generated/styled-maps/"
 
 # City parameters
 city_params <- read_yaml(paste0(user_input_dir, "city_inputs.yml"))
@@ -43,13 +43,13 @@ vheight <- vwidth
 useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; InfoPath.2; SLCC1; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET CLR 2.0.50727) 3gpp-gba UNTRUSTED/1.0'
 
 # Layers
-layer_params <- read_yaml('layers.yml')
+layer_params <- read_yaml('source/layers.yml')
 ```
 
 ```{r}
 # Get text
 city_text <- read_md(paste0(user_input_dir, "text-files/manual-text.md"))
-generic_text <- read_yaml("text-files/generic-text.yml")
+generic_text <- read_yaml("source/generic-text.yml")
 slide_texts <- merge_lists(city_text, generic_text)
 ```
 
@@ -115,10 +115,10 @@ print_slide_text(slide_texts$setting_the_context$basic_city_info)
 
 ### Population Growth
 
-<!-- ![](images/oxford-pop-growth.png) -->
+<!-- ![](generated/generated/plots/oxford-pop-growth.png) -->
 ```{r, output=TRUE}
-# saveRDS(pop_growth_plot, "plots/pop-growth.rds")
-ggplotly(readRDS("plots/pop-growth.rds"))
+# saveRDS(pop_growth_plot, "generated/generated/plots/pop-growth.rds")
+ggplotly(readRDS("generated/plots/pop-growth.rds"))
 ```
 
 ```{r}
@@ -128,10 +128,10 @@ print_slide_text(slide_texts$demographics$population_growth)
 
 ### Population Density (chart)
 
-<!-- ![](images/oxford-pop-density-scatter.png) -->
+<!-- ![](generated/plots/oxford-pop-density-scatter.png) -->
 ```{r, output=TRUE}
-# saveRDS(density_plot, "plots/density.rds")
-ggplotly(readRDS("plots/density.rds") + labs(y = "People per square kilometer"))
+# saveRDS(density_plot, "generated/plots/density.rds")
+ggplotly(readRDS("generated/plots/density.rds") + labs(y = "People per square kilometer"))
 ```
 
 ```{r}
@@ -141,10 +141,10 @@ print_slide_text(slide_texts$demographics$population_density_chart)
 
 ### Population Distribution by Age & Sex
 
-<!-- ![](images/world-pop-age-sex.png) -->
+<!-- ![](generated/plots/world-pop-age-sex.png) -->
 ```{r, output=TRUE}
-# saveRDS(pop_age_sex_plot, "plots/age-sex-distribution.rds")
-ggplotly(readRDS("plots/age-sex-distribution.rds"))
+# saveRDS(pop_age_sex_plot, "generated/plots/age-sex-distribution.rds")
+ggplotly(readRDS("generated/plots/age-sex-distribution.rds"))
 ```
 
 ```{r}

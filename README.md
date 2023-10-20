@@ -49,7 +49,7 @@ flowchart
 ```
 
 1. We begin with the **files necessary to render a City Scan document**. With `quarto render index.qmd` these files could be used to make the document locally.
-   1. Generic files: i.e., `index.qmd`, `fns.R`, `scrollytelling.qmd`, `layers.yml`, `custom.scss`, `text-files/generic-text.yml`, these are the files used by every scan. These files are included in *this directory*.
+   1. Generic files: i.e., `index.qmd`, `source/fns.R`, `source/scrollytelling.qmd`, `source/layers.yml`, `source/custom.scss`, `source/generic-text.yml`, these are the files used by every scan. These files are included in *this directory*.
    2. City-specific files: e.g. `city_inputs.yaml` and the TIFS used to make the maps. These files *are not* included in this directory.
    3. See [below](#running-locally) for how to render a City Scan document locally.
 2. To ensure this document can be rendered on a different machine, we create a **Docker image**.
@@ -70,11 +70,11 @@ flowchart
 This directory contains the generic files necessary for creating a City Scan document. That is, it *does not* include the city-specific files, such as the TIFs or `city_inputs.yaml`. Everything in this directory could be used by multiple cities. The city-specific files are stored on Google Cloud (where they have either been uploaded, e.g., `city_inputs.yaml`, or generated, e.g., TIFs).
 
 - `index.qmd` – The main file which Quarto builds the document from; a Quarto file (QMD) is a markdown file that can execute Python, R, and ObservableJS chunks
-- `fns.R` – The R functions used by `index.qmd`
-- `scrollytelling.qmd` – The ObservableJS code needed for the scrollytelling (the feature where the map layers turn on when the relevant section is scrolled to)
-- `layers.yml` – The recipe for how each map layer is made (this may be moved out of the container and onto Google Cloud, but probably best for it to stay here with a way to override it with a file in Google Cloud Storage)
-- `custom.scss` – The document's style sheet
-- `text-files/generic-text.yml` – the text snippets used by all City Scans, such as methodology text and citations.
+- `source/fns.R` – The R functions used by `index.qmd`
+- `source/scrollytelling.qmd` – The ObservableJS code needed for the scrollytelling (the feature where the map layers turn on when the relevant section is scrolled to)
+- `source/layers.yml` – The recipe for how each map layer is made (this may be moved out of the container and onto Google Cloud, but probably best for it to stay here with a way to override it with a file in Google Cloud Storage)
+- `source/custom.scss` – The document's style sheet
+- `source/generic-text.yml` – the text snippets used by all City Scans, such as methodology text and citations.
 
 #### Files for building the container
 This directory also contains the files necessary for building a Docker container and for building it specifically to Google Cloud.
