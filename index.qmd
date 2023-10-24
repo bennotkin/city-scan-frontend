@@ -1,5 +1,4 @@
 ---
-title: "Gagarin City Scan Test"
 format:
   html:
     theme: [source/custom.scss, none]
@@ -18,22 +17,30 @@ execute:
 # Only the github version of leaflet supports terra, in place of raster, which is now required as sp (on which raster depends) is being deprecated
 # devtools::install_github('rstudio/leaflet')
 source("source/fns.R")
+source("source/helpers.R")
 
-city_dir <- paste0("mnt/", readLines("city-dir.txt"), "/")
-user_input_dir <- paste0(city_dir, "01-user-input/")
-process_output_dir <- paste0(city_dir, "02-process-output/")
-spatial_dir <- paste0(process_output_dir, "spatial/")
-output_dir <- paste0(city_dir, "03-render-output/")
+city_dir <- paste_path("mnt/", readLines("city-dir.txt"))
+user_input_dir <- paste_path(city_dir, "01-user-input/")
+process_output_dir <- paste_path(city_dir, "02-process-output/")
+spatial_dir <- paste_path(process_output_dir, "spatial/")
+output_dir <- paste_path(city_dir, "03-render-output/")
 styled_maps_dir <- "generated/styled-maps/"
 
 # City parameters
-city_params <- read_yaml(paste0(user_input_dir, "city_inputs.yml"))
+city_params <- read_yaml(paste_path(user_input_dir, "city_inputs.yml"))
 # cities <- list.files("cities")
 city <- city_params$city_name
 city_string <- tolower(city) %>% stringr::str_replace_all(" ", "-")
 country <- city_params$country
 
-# Visualization parameters
+# Load map layer parameters
+layer_params <- read_yaml('source/layers.yml')
+```
+
+
+```{r}
+#| include: false
+# Visualization parameters (Am I using all of them?)
 basemap_opacity <- 0.3
 legend_opacity <- 0.8
 vwidth <- 900
@@ -57,7 +64,7 @@ slide_texts <- merge_lists(city_text, generic_text)
 #| include: false
 
 # Define the AOI
-aoi <- st_read(paste0(user_input_dir, "AOI"))
+aoi <- st_read(paste_path(user_input_dir, "AOI"))
 aoi_bounds <- st_bbox(aoi)
 
 # Inititate the map here, will build on it in each "slide"
