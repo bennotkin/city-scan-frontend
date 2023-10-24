@@ -11,16 +11,17 @@ library(plotly)
 # Map Functions ----
 # Function for reading rasters with fuzzy names
 # Ideally, though, we would name in a consistent way where this is rendered unnecessary
-fuzzy_read <- function(spatial_dir, fuzzy_string, FUN = read_raster, path = F, ...) {
-  file <- list.files(spatial_dir) %>% subset(str_detect(., fuzzy_string)) %>%
-    str_extract("^[^\\.]*") %>% unique()
+fuzzy_read <- function(spatial_dir, fuzzy_string, FUN = rast_as_vect, path = T, ...) {
+  file <- list.files(spatial_dir) %>% subset(str_detect(., fuzzy_string)) #%>%
+    #str_extract("^[^\\.]*") %>% unique()
   if (length(file) > 1) warning(paste("Too many", fuzzy_string, "files in", spatial_dir))
   if (length(file) < 1) warning(paste("No", fuzzy_string, "file in", spatial_dir))
   if (length(file) == 1) {
     if (!path) {
       content <- suppressMessages(FUN(spatial_dir, file, ...))
     } else {
-      content <- suppressMessages(FUN(paste(spatial_dir, file, sep = "/"), ...))
+      file_path <- paste_path(spatial_dir, file)
+      content <- suppressMessages(FUN(file_path, ...))
     }
     return(content)
   } else {
@@ -28,16 +29,16 @@ fuzzy_read <- function(spatial_dir, fuzzy_string, FUN = read_raster, path = F, .
   }
 }
 
-# Read raster function 
-# This is the earlier version that takes folder and then file name as the first
-# two args; I believe I did this so it could be used with fuzzy_read
-read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
-  if (!is.null(raster_band)) {
-    rast(paste0(folder, '/', raster_name, '.tif'), band = raster_band, ...)
-  } else {
-    rast(paste0(folder, '/', raster_name, '.tif'), ...)
-  }
-}
+# # Read raster function 
+# # This is the earlier version that takes folder and then file name as the first
+# # two args; I believe I did this so it could be used with fuzzy_read
+# read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
+#   if (!is.null(raster_band)) {
+#     rast(paste0(folder, '/', raster_name, '.tif'), band = raster_band, ...)
+#   } else {
+#     rast(paste0(folder, '/', raster_name, '.tif'), ...)
+#   }
+# }
 
 # # Edit this to take just a path
 # read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
@@ -47,6 +48,8 @@ read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
 #     rast(paste0(folder, '/', raster_name, '.tif'), ...)
 #   }
 # }
+
+rast_as_vect <- function(filename, ...) as.polygons(rast(filename, ...), digits = 8)
 
 # round_up_breaklist <- function(breaklist, tonum = 10) {
 #   last <- -1000
@@ -60,7 +63,7 @@ read_raster <- function(folder, raster_name, raster_band = NULL, ...) {
 # }
 
 # Functions for making the maps
-plot_basemap <- function(basemap_style = "satellite") {
+plot_basemap <- function(basemap_style = "vector") {
   basemap <-leaflet(
       data = aoi,
       # Need to probably do this with javascript
@@ -84,7 +87,7 @@ plot_basemap <- function(basemap_style = "satellite") {
   return(basemap)
 }
 
-create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, message = F, ...) {
+create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, message = F, fuzzy_string = NULL, ...) {  
   if (message) message("Check if data is in EPSG:3857; if not, raster is being re-projected")
 
   # Override the layers.yaml parameters with arguments provided to ...
@@ -98,6 +101,7 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
   if (is.null(params$bins)) params$bins <- 0
   if (is.null(params$labFormat)) params$labFormat <- labelFormat()
 
+  # data <- fuzzy_read(spatial_dir, params$fuzzy_string)
   layer_values <- get_layer_values(data)
   
   if (is.null(color_scale)) {
@@ -109,15 +113,19 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
       bins = params$bins)
   }
 
-  group <- params$group_id
-
   # CRC Workshop's app.R's raster_discrete() uses the following variables
   # What are each of these doing and do I need to use them?
   # - map_id: this is Shiny specific and names the map
   # - input_name: used to name the layer group (my group_id)
-  # - raster_var: x in addRasterImage or 
-  # - raster_col: either a color scale function or a vector of colors?
-  # - raster_val: for discrete rasters, legend labels; for continuous, the raster values
+  # - raster_var: the data
+  # - raster_col:
+      # discrete: vector of colors, or a color scale function for land cover
+      # continuous: color scale function
+  # - raster_val: 
+      # discrete: legend labels of provided colors
+      # continuous: the raster values (think it only needs to be domain)
+  
+  # for discrete rasters, legend labels; for continuous, the raster values
   #   - this is used in the color_scale with raster_col(raster_val) and as the legend labels
   #   - for the legend labels, need to match the colors in raster_col (same number)  -- it might
   #     be helpful to just use dicitonaries instead (like I do with landcover in CRC)
@@ -134,6 +142,12 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
   #       - addLegend uses `colors = raster_col(raster_val)`
   #       - addLegend uses `labels = names(raster_val)`
   #   - if it is not a function (so it's a character vector of colors)
+  # - raster_continuous: only takes functions
+  # - raster_discrete
+  #   - addLegend uses colors = color_scale(legend_values)
+  #   - addLegend uses labels = legend_values
+
+### !!! I need to pull labels out because not always numeric so can't be signif
 
   layer_function <- function(maps, show = T) {
       if (class(data)[1] %in% c("SpatRaster", "RasterLayer")) {
@@ -143,17 +157,26 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
             colors = color_scale,
             # For now the group needs to match the section id in the text-column
             # group = params$title %>% str_replace_all("\\s", "-") %>% tolower(),
-            group = group)
-      } else if (class(data)[1] %in% c("SpatVector", "sf")) {
+            group = params$group_id)
+      } else if (class(data)[1] %in% c("SpatVector")) {
       # VECTOR
+        maps <- maps %>%
+          addPolygons(
+            data = data,
+            fillColor = ~color_scale(pull(data[[1]])),
+            fillOpacity = 0.9,
+            stroke = F,
+            group = params$group_id,
+            label = ~ signif(pull(data[[1]]), 6)) # Needs to at least be 4 
+      } else if (class(data)[1] %in% c("sf")) {
         maps <- maps %>%
           addPolygons(
             data = data,
             fillColor = ~color_scale(values),
             fillOpacity = 0.9,
             stroke = F,
-            group = group,
-            label = ~ values)
+            group = params$group_id,
+            label = ~ signif(values, 6))
       }
       # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
       maps <- maps %>%
@@ -165,7 +188,7 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
           title = params$title,
           labFormat = params$labFormat,
           # group = params$title %>% str_replace_all("\\s", "-") %>% tolower())
-          group = group)
+          group = params$group_id)
       # if (!show) maps <- hideGroup(maps, group = layer_id)
       return(maps)
   }

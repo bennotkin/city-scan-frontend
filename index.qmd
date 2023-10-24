@@ -48,10 +48,11 @@ vheight <- vwidth
 
 # this is to enable fractional zoom in mapshot
 useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; InfoPath.2; SLCC1; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET CLR 2.0.50727) 3gpp-gba UNTRUSTED/1.0'
-
-# Layers
-layer_params <- read_yaml('source/layers.yml')
 ```
+
+---
+title: "`r paste(city, country, sep = ", ")` City Scan"
+---
 
 ```{r}
 # Get text
@@ -164,6 +165,7 @@ print_slide_text(slide_texts$demographics$population_distribution_age_sex)
 ```{r}
 #| include: false
 # Read population data
+# Eventually, move fuzzy_read inside of create_layer_function
 pop <- fuzzy_read(spatial_dir, "population")
 add_pop_layer <- create_layer_function(data = pop, yaml_key = "population")
 
@@ -183,62 +185,8 @@ print_slide_text(slide_texts$demographics$population_density)
 ```{r}
 #| include: false
 # Read RWI
-rwi <-
-  st_read(paste0(spatial_dir, "relative_wealth_index"), quiet = T) %>%
-  select(values = rwi, long = longitude, lat = latitude)
-
-# # Using terra intead of sf for consistency
-# # Except this doesn't work well because there are multiple value columns so it gets complicated to use programmatically 
-# rwi <- vect(paste0(spatial_dir, "relative_wealth_index"))
-
-# rwi_range <- max(c(abs(min(rwi$values)), max(rwi$values))) %>% {c(-., 0, .)}
-
-# rwi_color_scale <- colorNumeric(
-#   palette = colorRamp(
-#     c('#ED431B', '#FF9169', '#FFFFBA', '#70C5AD', '#009E7A'),
-#     interpolate = 'linear'),
-#   domain = NULL,
-#   na.color = 'transparent')
-# 
-# add_rwi_layer <- function(map) {
-#   map %>% addPolygons(
-#     data = rwi,
-#     fillColor = ~ rwi_color_scale(values),
-#     fillOpacity = 1,
-#     stroke = F,
-#     group = "rwi",
-#     label = ~ values) %>%
-#     addLegend(
-#       'bottomright',
-#       pal = rwi_color_scale,
-#       values = c(min(rwi$values, na.rm = T), max(rwi$values, na.rm = T)),
-#       opacity = legend_opacity,
-#       # bins = 3,  # legend color ramp does not render if there are too many bins
-#       title = layer_params$rwi$title,
-#       labFormat = labelFormat(),
-#       group = "rwi",
-#       # Adding classname because hideGroup() doesn't hide legend; see workaround
-#       # here: https://github.com/rstudio/leaflet/issues/477#issuecomment-678542769
-#       className = "info legend rwi"
-#       )
-# }
-# 
-# plot_basemap() %>% add_rwi_layer() %>%
-#    htmlwidgets::onRender("
-#       function(el, x) {
-#          var updateLegend = function () {
-#             var selectedGroup = document.querySelectorAll('input:checked')[0].nextSibling.innerText.substr(1);
-# 
-#             document.querySelectorAll('.legend').forEach(a => a.hidden=true);
-#             document.querySelectorAll('.legend').forEach(l => {
-#                if (l.classList.contains(selectedGroup)) l.hidden=false;
-#             });
-#          };
-#          updateLegend();
-#          this.on('overlayremove', el => updateLegend());
-#       }") %>%
-#   hideGroup("rwi")
-
+# (Necessary to include ["rwi"] because shapefile has multiple layers)
+rwi <- fuzzy_read(spatial_dir, "relative_wealth", FUN = vect)["rwi"]
 add_rwi_layer <- create_layer_function(
   data = rwi, yaml_key = "rwi",
   labFormat = labelFormat(digits = 1))
