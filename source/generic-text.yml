@@ -1,12 +1,8 @@
+# SECTION 2
 setting_the_context:
   basic_city_info:
-    footnote: |
-      The black and yellow boundary marks the area of interest for the City Scan. The black-only lines outline the six villages.[^1]
-      
-      [^1]: You can also add markdown footnotes with `[^1]; for now these appear at the very bottom of the page.      
-      
-      \*The AOI, and the population figure, includes the villages of AOI includes Ddmashen, Geghamavan, Tsaghkunk, Varser and Zovaber, as well as Gagarin.
-      City Population. Babayan, Araik et al. DAR Foundation for Regional Development and Competitiveness, N.D.
+    footnote: The black and yellow boundary marks the area of interest for the City Scan.
+# SECTION 3
 demographics:
   population_growth:
     method: Population figures are typically used as a denominator for many indicators, and are a measure of demand for services. The line chart above summarizes the city's population change according to census and other public data. High growth of urban populations, caused by rates of natural increase (more births than deaths) in urban areas, migration from rural to urban areas, and the transformation of rural settlements into urban places, puts pressure on cities to meet the new demand.
@@ -25,14 +21,165 @@ demographics:
   relative_wealth:
     method: This map shows micro-estimates of wealth and poverty relative to the whole country that cover the populated surface at a 2.4 km^2^ resolution. Many critical policy decisions, from strategic investments to the allocation of humanitarian aid, rely on data about the geographic distribution of wealth and poverty.
     footnote: Map data from Meta Data for Good.
+  social_distancing:
+    method: In locations where social distancing is difficult, a focus on alternative measures to reduce disease transmission may be needed. This map demonstrates an ease of social distancing index, a composite measure, intended to highlight variations in ease of social distancing in urban settings, calculated based on the space available around buildings and estimated population density. Higher values indicate a greater difficulty in social distancing.
+    footnote: "H.R. Chamberlain et al, 2021."
+# SECTION 4
 economic_activity:
+  national_shares:
+    method: |
+      Urbanization and economic growth go hand in hand, in that higher levels of development are correlated with a greater concentration of production and population in cities. If managed well, cities:
+      - connect jobs and workers, allowing people to find employment that matches their skill sets​;
+      - connect businesses with each other, allowing clusters of firms to share pools of labor and inputs, specialize and collaborate, and glean knowledge and ideas from others in their industry​;
+      - connect urban residents to more extensive markets and increase their access to a variety of choices
+    footnote: 'Oxford, 2022, “Oxford Economics”.'
   economic_hotspots:
     method: "This map measures the total emissions of nighttime lights from the monthly average of radiance for 2014 through 2022. Nighttime light radiance is a common proxy for economic activity\\: where there is more artificial light, there is generally more commercial activity."
     footnote: Map data from NOAA, "VIIRS Daily Mosaic".
   economic_change:
     method: The map illustrates monthly temporal changes from 2014 to 2022 in the emission of nighttime lights, indicating changes in economic activity. Positive values represent an increase in the intensity of nighttime light emission and, by proxy, economic activity, while negative values represent a decrease in the intensity of nighttime light emission, and economic activity.
     footnote: Map data from NOAA, "VIIRS Daily Mosaic".
+# SECTION 5
 built_form:
   wsf:
     method: NULL
     footnote: Map data from DLR, 2015, "World Settlement Footprint Evolution - Landsat 5/7 - Global".
+  builtup_density:
+    method: |
+      This map shows the imperviousness percentage of the city’s surfaces, as measured by satellite imagery. Less pervious surfaces absorb less water. This measure is a useful proxy for the density of buildings in a built-up area: impervious surfaces are typically paved structures such as roads, parking lots, airports, etc., that are covered by water-resistant material like asphalt, concrete, or rooftops. 
+      Separate from population density, built-up density can indicate where more interactivity between people is likely to take place. In general, benefits of built-up density can include greater economic activity, higher energy efficiency, and more room for nearby open spaces. 
+    footnote: Map data from DLR, 2015, “World Settlement Footprint Evolution - Landsat 5/7 - Global”.
+  land_cover:
+    method: Land cover refers to the ground surface cover, including vegetation, urban infrastructure, water, and bare soil, among other classifications. Identifying land cover type helps to understand land utilization and inform planning policies and programs.
+    footnote: © ESA WorldCover project 2020 / Contains modified Copernicus Sentinel data (2020) processed by ESA WorldCover consortium’
+  road_network_orientation:
+    method: |
+      This layer visualizes the geometric orientation of a city’s streets, specifically the proportion of streets that point east, west, north, south, or to any point around a compass. Street edge bearings can help illuminate the history of urban design, transportation planning, and morphology; evaluate existing transportation patterns and configurations; and explore new planning proposals and alternatives. 
+      Cities built since the 1900s with grid-based urban planning exhibit a clear “compass rose” pattern (the majority of street bearings point in a narrow band of N-S degrees, and another narrow band of E-W degrees, e.g. Manhattan). The connectedness of a grid supports route choice, convenience, walkability, and in turn the human dynamics of social mixing, activity, and encounter.
+      Cities with a highly organic urban form, and limited top-down planning, exhibit a heterogeneous set of edge bearings, equally spread across all corners of the compass (e.g. Kigali), generating a circular distribution. In other cases, partial areas within a highly planned city coexist alongside organic patterns for the remaining city, creating a hybrid pattern.
+  intersections: 
+    method: Intersection density is a measure of network compactness, conveying information about street connectivity. The amount and types of intersections in a road network help determine how a local community functions and the character of the streets themselves. In a good street network, most streets should connect at both ends. A high level of connectivity provides an efficient platform for dispersing traffic, facilitating route choice, and creating more comfortable conditions for people who travel by foot, bike, or transit.
+    footnote: Map data from OpenStreetMap.
+  schools:
+    method: Using a proximity analysis along the existing road network, this map identifies the areas that are most- and least-accessible to schools. The analysis includes all facilities classified in OpenStreetMap as a school, kindergarten, college or university. Note that there may be more schools that are not included in OpenStreetMap.
+    footnote: Map data from OpenStreetMap and DLR, 2015.
+  health_facilities: 
+    method: Using a proximity analysis along the existing road network, this map identifies the areas that are most- and least-accessible to schools. The analysis includes all facilities classified in OpenStreetMap as a health amenity, clinic, or hospital. Note that there may be more health facilities that are not included in OpenStreetMap.
+    footnote: Map data from OpenStreetMap and DLR, 2015.
+# SECTION 6 CLIMATE CONDITIONS
+climate_conditions:
+  solar:
+    method: Solar electricity offers a unique opportunity to achieve long-term energy sustainability goals. Photovoltaics (PV) is the most widely applied and versatile technology for solar power. The availability of solar energy depends on site conditions. This map displays an indicative estimate of annual specific yield, that is, how much energy a hypothetical PV system would produce for per unit of capacity, in a given year (kWh/kWp). Values above 1,640  are considered excellent availability, while values between 1280 and 1640 are moderate.
+    footnote: |
+      Map data obtained from the “Global Solar Atlas 2.0, a free, web-based application is developed and operated by the company Solargis s.r.o. on behalf of the World Bank Group, utilizing Solargis data, with funding provided by the Energy Sector Management Assistance Program (ESMAP). For additional information: https://globalsolaratlas.info
+      The Global Solar Atlas uses generalized theoretical settings for a quick assessment of PV power potential for a selected site. An optimum tilt angle of PV modules and 100% availability (no shutdowns due to failure) are assumed.
+  air_quality:
+    method: |
+      The concentration of particulate matter (PM) is a key indicator of air quality since it is the most common air pollutant affecting short and long-term health. This map displays the average annual concentration (µg per m3) of ground-level fine particulate matter of 2.5 micrometers or smaller (PM2.5). 
+      PM2.5 particles are of greater concern than PM10 particles because their small size allows them to travel deeper into the cardiopulmonary system. According to the WHO and the United States EPA standards, PM2.5 concentrations should not exceed between 5 µg/m3 or 12 µg/m3, respectively. Higher concentrations of particulate matter may also reduce the availability of solar energy.
+    footnote: |
+      PM2.5 Grids are derived using annual data from 1998-2019 represent near-surface concentrations.
+      Map data from Hammer, 2022, “Global Annual PM2.5 Grids”.
+  summer_lst:
+    method: |
+      Temperatures in an area are affected by many factors, such as land cover, elevation, slope, and proximity to water. Higher temperatures can generate or exacerbate negative effects related to health, social equity, and economic productivity. Typically, cities demonstrate higher temperatures than vegetated areas: construction materials, such as concrete, absorb more solar radiation; less vegetation results in less evapotranspiration; and more vehicle usage and mechanical cooling generate more heat.
+      This map shows average surface temperatures from June through September, 2017–2021, at a 30-meter resolution. Note that it measures surface temperature rather than ambient temperature, which can differ by several degrees. Surface temperature is primarily useful for identifying hotter and cooler areas within a specific geography.
+    footnote: Landsat Level 2 Surface Temperature Science Product courtesy of the U.S. Geological Survey.
+  vegetation:
+    method: |
+      This map displays the Normalized Difference Vegetation Index, which ranges between -1 and 1, with higher numbers indicating a higher density of green vegetation. Values of less than 0.1 typically indicate water, rock, and otherwise barren land; values of 0.1 to 0.5 are associated with sparse vegetation, such as shrubs and grassland; and values of more than 0.5 correspond to dense vegetation such as forests or mature crops.
+      Vegetation and green spaces in cities are associated with health benefits and the mitigation of environmental risks. More green space in a city can reduce temperatures and the urban heat island effect, lessen air pollution, and absorb floodwaters. Green spaces can also serve important civic, social, and quality of life functions.
+    footnote: |
+      Map data from European Space Agency, 2020, “Normalized Difference Vegetation Index”.
+      NDVI-based measures do not account for the proximity and spatial arrangement of green spaces within areal units. They also do not address the vertical dimension and density of green urban buildup.
+  forest:
+    method: Loss of forest areas and wetlands in urban catchments contributes to a reduction in green land cover. As soils are then more likely to be saturated with water, more precipitation runs off, increasing the risk of flash flooding. Halting the loss and degradation of natural systems and promoting their restoration can therefore be critical.
+    footnote: Map data from Hansen/UMD/Google/USGS/NASA, at 1 arcsecond resolution. Trees are defined as vegetation taller than 5 meters.
+# SECTION 7
+risk_identification:
+  flood_events:
+    method: These events are recorded in the Dartmouth Flood Observatory’s Global Active Archive. The archive may not include all significant flood events. The death and displacement figures reflect the deaths and displacements for the entire flood extent, which may include areas greater than the city’s extent.
+    footnote: 'Brakenridge, “Global Active Archive of Large Flood Events”. See Data Notes for more information on the archive and its severity classifications.'
+  flooding_infrastructure_fluvial:
+    method: |
+      Fluvial, or riverine flooding, occurs when excessive rainfall over an extended period of time causes a river to exceed its capacity. The damage from a river flood can be widespread as the overflow affects smaller rivers downstream, often causing dams and dikes to break and swamp nearby areas.
+      The infrastructure assets shown here are provided by OpenStreetMap. There may be other roads, health facilities, schools, fire stations and police stations that are not cataloged by OpenStreetMap.
+    footnote: |
+      Map data from OpenStreetMap and Fathom, “Flood Hazard: Global 2.0”. See Data Notes for more on the Fathom dataset.
+      OpenStreetMap data may not include all facilities.
+  flooding_infrastructure_pluvial:
+    method: |
+      Pluvial, or surface water flooding, is caused when heavy rainfall creates a flood event independent of an overflowing water body. It can occur in any urban area — even higher elevation areas that lie above coastal and river floodplains.
+      The infrastructure assets shown here are provided by OpenStreetMap. There may be other roads, health facilities, schools, fire stations and police stations that are not cataloged by OpenStreetMap.
+    footnote: |
+      Map data from OpenStreetMap and Fathom, “Flood Hazard: Global 2.0”. See Data Notes for more on the Fathom dataset.
+      OpenStreetMap data may not include all facilities.
+  flooding_infrastructure_combined:
+    method: |
+      ​Many urban areas experience both fluvial and pluvial floods; places near rivers are preferred settlement areas, and a predominantly sealed urban surface prevents water infiltration, facilitating surface inundation. This problem is exacerbated in cities with insufficient or non-existent sewer systems.
+      The infrastructure assets shown here are provided by OpenStreetMap. There may be other roads, health facilities, schools, fire stations and police stations that are not cataloged by OpenStreetMap.
+    footnote: |
+      Map data from OpenStreetMap and Fathom, “Flood Hazard: Global 2.0”. See Data Notes for more on the Fathom dataset.
+      OpenStreetMap data may not include all facilities.
+  flooding_builtup_fluvial:
+    method: ​The placement of assets in low-lying urban areas close to rivers has significantly intensified cities’ sensitivity to river floods.
+    footnote: Map data from DLR, 2015, and Fathom. See Data Notes for more on the Fathom 
+  flooding_builtup_pluvial:
+    method: Tarmacked and paved surfaces, which limit water infiltration and increase the speed and amount of water running off the ground, lead to rainwater flooding in urban areas. This phenomenon is exacerbated by the alteration of natural drainage routes, resulting in reduced urban capacity for excess water.
+    footnote: Map data from DLR, 2015, and Fathom. See Data Notes for more on the Fathom dataset.
+  flooding_builtup_combined:
+    method: Intense rainfall in urban areas can generate both pluvial flooding due to the limited capacity of drainage systems, as well as fluvial flooding caused by deluges from river channels. The concurrence of pluvial and fluvial flooding often aggravates the damage potential they individually produce.
+    footnote: Map data from DLR, 2015, and Fathom. See Data Notes for more on the Fathom dataset.
+  flooding_population_fluvial:
+    method: Human settlements along streams and river basins are highly vulnerable to the flow of water. People are particularly sensitive to flooding in cases where population density is high, zoning regulations are absent or not enforced, flood controls are weak, and emergency response infrastructure and early warning systems are lacking.
+    footnote: Map data from WorldPop and Fathom. See Data Notes for more on the Fathom dataset.
+  flooding_population_pluvial:
+    method: One consequence of increased population density in cities is an increase in impermeable surfaces, which leads to an increase in storm-water runoff.
+    footnote: Map data from WorldPop and Fathom. See Data Notes for more on the Fathom dataset.
+  flooding_population_combined:
+    method: When populations are exposed, vulnerable, dense, and ill-prepared, the effects of climate change on them are exacerbated along with the increased intensity and frequency of harmful flood events.
+    footnote: Map data from WorldPop and Fathom. See Data Notes for more on the Fathom dataset.
+  sea_level_rise:
+    method: In urban settings along coastlines, rising seas often exacerbate flooding, shoreline erosion, and hazards from storms. Higher sea levels mean that storm events, such as tsunamis, can be even more devastating as the baseline sea level is already higher. Climate change has been accelerating a rise in global sea levels, leading to ocean intrusion on land and aggravated coastal flood risk.
+    footnote: |
+      Climate Central Flood Layers (v2.0).
+      SSP2-4.5 and SSP5-8.5 are each projected scenarios of climate change. SSP2-4.5 represents a future of intermediate greenhouse gas emissions, and an estimated 2.7°C increase in global temperatures by the end of the century. SSP5-8.5 represents a future of high greenhouse gas emissions, and an estimated 4.4°C increase in global temperatures. SSP stands for Shared Socio-economic Pathway, and is used by IPCC reports to differentiate possible futures.
+  coastal_erosion:
+    method: Coastal erosion refers to the loss or displacement of land along coastlines, owing to the action of waves, currents, tides, wind, or other forces, including human intervention. Abrupt changes in weather, sea level, salinity, or tides can result in the loss of vegetation that protects against erosive action. Erosion can be slowed by hard and soft infrastructure interventions, though in severe cases, it may require retreat.
+    footnote: |
+      Delft University of Technology, Long-term Shoreline Changes (1984-2016).
+      Positive change in coastline is accretion, while negative change is erosion.
+  elevation:
+    method: Elevation informs an area’s vulnerability to many natural disasters. The height at which infrastructure, resources, and communities sit relative to normal water levels and tides, flood waters, and storm surges and waves informs their exposure. Elevation information is critical for communities to anticipate the impacts of disasters and to prepare resilient and cost-effective response and redevelopment strategies.
+    footnote: 'Map data from USGS, 2015, “USGS EROS Archive - Digital Elevation”.'
+  slope:
+    method: Slope refers to the percentage change in elevation over a certain distance. In hilly or mountainous areas, floods can occur within minutes after heavy rains, while in flat areas, floodwaters can remain for days. Considering the slope of land is important in reducing construction costs, extending services and public facilities, minimizing the risks of hazards like flooding and landslides, and mitigating the impacts of development on natural resources.
+    footnote: 'Map data from USGS, 2015, “USGS EROS Archive - Digital Elevation”.'
+  landslides:
+    method: |
+      This indicator refers to the likelihood that a landslide will occur in a particular area based on local terrain conditions. It shows the degree to which a terrain can be affected by slope movements, i.e., an estimate of “where” landslides are likely to occur. Susceptibility does not, however, consider the temporal probability of failure (i.e., when or how frequently landslides occur), nor the magnitude of the expected landslide (i.e., how large or destructive the failure will be). ​
+      This map combines satellite observations of rainfall with an assessment of the underlying susceptibility of the terrain. Steep slopes are the most important factor in a landscape’s susceptibility to landslides. Others include deforestation, presence of roads, strength of the bedrock and soils, and location of fault lines.
+    footnote: 'Map data from NASA, “Landslide Susceptibility Map”.'
+  earthquake_events:
+    method: NULL
+    footnote: |
+      National Geophysical Data Center / World Data Service (NGDC/WDS): NCEI/WDS Global Significant Earthquake Database. NOAA National Centers for Environmental Information. DOI:10.7289/V5TD9V7K
+      Note that the cited damage level is for the earthquake overall, not necessarily in the city of interest. The database defines damage levels by monetary cost: limited, < $1 million; moderate, $1–5 million; severe, $5–24 million; extreme, $25+ million.
+  seismic_hazard:
+    method: This map depicts the geographic distribution of the Peak Ground Acceleration (PGA) with a 10% probability of being exceeded in 50 years, computed for reference rock conditions (shear wave velocity of 760-800 m/s). Seismic risk in cities has increased mainly due to urbanization, poor land-use planning and construction, inadequate infrastructure and services, and environmental degradation. Urban risk predictions and expected losses from major earthquakes in the future justify proactive risk mitigation activities.
+    footnote: |
+      Map data from Silva et al, 2018, Global Earthquake Model (GEM) Seismic Hazard Map and Seismic Risk Map, V2018.1.
+      These data and map are derived from the Global Earthquake Model, which provides information on probabilistic earthquake risk; at its scale, it does not address the vulnerability to earthquakes of individual structures or sub-regions. An earthquake with moderate damage potential can cause structural damage to unreinforced masonry buildings and the movement of wood-frame houses. See https://web.archive.org/web/20120306024658/http://quake.abag.ca.gov/shaking/mmi/plaintext/ for more.
+  seismic_risk:
+    method: This map indicates the geographic distribution of average annual loss (AAL) in USD normalized by the average construction cost of the respective country (USD/m2) due to ground shaking in the residential, commercial, and industrial building stock, considering contents, structural, and non-structural components. The normalized metric allows a direct comparison of the risk between countries with widely different construction costs. It does not consider the effects of tsunamis, liquefaction, landslides, and fires following earthquakes. The loss estimates are from direct physical damage to buildings due to shaking, and thus damage to infrastructure or indirect losses due to business interruption are not included. Seismic risk in cities has increased mainly due to urbanization, poor land-use planning and construction, inadequate infrastructure and services, and environmental degradation. Urban risk predictions and expected losses from major earthquakes in the future justify proactive risk mitigation activities.
+    footnote: |
+      Map data from Silva et al, 2018, Global Earthquake Model (GEM) Seismic Hazard Map and Seismic Risk Map, V2018.1.
+      These data and map are derived from the Global Earthquake Model, which provides information on probabilistic earthquake risk; at its scale, it does not address the vulnerability to earthquakes of individual structures or sub-regions. An earthquake with moderate damage potential can cause structural damage to unreinforced masonry buildings and the movement of wood-frame houses. See https://web.archive.org/web/20120306024658/http://quake.abag.ca.gov/shaking/mmi/plaintext/ for more.
+  road_network_criticality:
+    method: |
+      This layer visualizes an approximation of road network criticality. It highlights segments within a road network that, if blocked due to flooding or other hazards, would cause a high degree of disruption to travel across the city. Segments in red are the most critical for the overall connectivity of the city.
+      Note that cities vary substantially in their probability of disruption due to failure of a small number of road segments; for example, when a street network follows a grid pattern or has many alternative routes between destinations, the risk of disruption owing to the failure of key road segments is lower. In contrast, other cities have particular road segments whose failure would affect a large proportion of journeys across the city.
+    footnote: |
+      Map data from OpenStreetMap.
+      Criticality is measured by calculating *betweenness* for each segment. Betweenness for a segment is calculated by mapping the shortest path from each intersection to every other intersection, and then taking the percentage of all trips that use that segment.
+# SECTION 8 LOCAL INSTITUTIONS AND PLANNING

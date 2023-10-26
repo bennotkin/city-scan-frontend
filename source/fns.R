@@ -49,7 +49,7 @@ fuzzy_read <- function(spatial_dir, fuzzy_string, FUN = rast_as_vect, path = T, 
 #   }
 # }
 
-rast_as_vect <- function(filename, ...) as.polygons(rast(filename, ...), digits = 8)
+rast_as_vect <- function(filename, digits = 8, ...) as.polygons(rast(filename, ...), digits = digits)
 
 # round_up_breaklist <- function(breaklist, tonum = 10) {
 #   last <- -1000
@@ -97,20 +97,44 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
   new_params <- list(...)
   kept_params <- yaml_params[!names(yaml_params) %in% names(new_params)]
   params <- c(new_params, kept_params)
-  
-  if (is.null(params$bins)) params$bins <- 0
+
+  params$breaks <- unlist(params$breaks) # Necessary for some color scales
+  if (is.null(params$bins)) {
+    params$bins <- if(is.null(params$breaks)) 0 else length(params$breaks)
+    # params$bins <- if(is.null(params$breaks)) 0 else NULL
+  }
   if (is.null(params$labFormat)) params$labFormat <- labelFormat()
+  # if (!is.null(params$factor) && params$factor) {
+  #   params$labFormat <- function(type, levels) {return(params$labels)}
+  # }
+
+  if (!is.null(params$factor) && params$factor) {
+    data <- 
+      set_layer_values(
+        data = data,
+        values = ordered(get_layer_values(data),
+                        levels = params$breaks,
+                        labels = params$labels))
+  }
 
   # data <- fuzzy_read(spatial_dir, params$fuzzy_string)
   layer_values <- get_layer_values(data)
-  
+  labels <- label_maker(x = layer_values,
+                        levels = params$breaks,
+                        labels = params$labels,
+                        suffix = params$suffix)
+
+
   if (is.null(color_scale)) {
-    domain <- set_domain(layer_values, domain = params$domain, center = params$center)
+    domain <- set_domain(layer_values, domain = params$domain, center = params$center, factor = params$factor)
     color_scale <- create_color_scale(
       domain = domain,
       palette = params$palette,
       center = params$center,
-      bins = params$bins)
+      # bins = if (is.null(params$breaks)) params$bins else params$breaks
+      bins = params$bins,
+      breaks = params$breaks,
+      factor = params$factor)
   }
 
   # CRC Workshop's app.R's raster_discrete() uses the following variables
@@ -158,35 +182,39 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
             # For now the group needs to match the section id in the text-column
             # group = params$title %>% str_replace_all("\\s", "-") %>% tolower(),
             group = params$group_id)
-      } else if (class(data)[1] %in% c("SpatVector")) {
+      } else if (class(data)[1] %in% c("SpatVector", "sf")) {
       # VECTOR
         maps <- maps %>%
           addPolygons(
             data = data,
-            fillColor = ~color_scale(pull(data[[1]])),
+            fill = if(is.null(params$fill) || params$fill) T else F,
+            fillColor = ~color_scale(layer_values),
             fillOpacity = 0.9,
-            stroke = F,
+            stroke = if(!is.null(params$stroke) && params$stroke != F) T else F,
+            color = if(!is.null(params$stroke) && params$stroke == T) ~color_scale(layer_values) else params$stroke,
+            weight = params$weight,
+            opacity = 0.9,
             group = params$group_id,
-            label = ~ signif(pull(data[[1]]), 6)) # Needs to at least be 4 
-      } else if (class(data)[1] %in% c("sf")) {
-        maps <- maps %>%
-          addPolygons(
-            data = data,
-            fillColor = ~color_scale(values),
-            fillOpacity = 0.9,
-            stroke = F,
-            group = params$group_id,
-            label = ~ signif(values, 6))
+            # label = ~ signif(pull(data[[1]]), 6)) # Needs to at least be 4 
+            label = labels)
       }
       # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
       maps <- maps %>%
-        addLegend('bottomright', pal = color_scale,
+        addLegend(
+          # data = data,
+          position = 'bottomright',
+          pal = color_scale,
+          # colors = palette,
           values = domain,
           opacity = legend_opacity,
           # bins = params$bins,
           # bins = 3,  # legend color ramp does not render if there are too many bins
+          # labels = params_labels,
           title = params$title,
           labFormat = params$labFormat,
+          # labFormat = labelFormat(transform = function(x) label_maker(x = x, levels = params$breaks, labels = params$labels)),
+          # labFormat = function(type, breaks, labels) {
+          # }
           # group = params$title %>% str_replace_all("\\s", "-") %>% tolower())
           group = params$group_id)
       # if (!show) maps <- hideGroup(maps, group = layer_id)
@@ -197,32 +225,60 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
 }
 
 get_layer_values <- function(data) {
-  if (class(data)[1] %in% c("SpatRaster", "SpatVector")) {
+  if (class(data)[1] %in% c("SpatRaster")) {
       values <- values(data)
+    } else if (class(data)[1] %in% c("SpatVector")) {
+      values <- pull(values(data))
     } else if (class(data)[1] == "sf") {
       values <- data$values
     } else stop("Data is not of class SpatRaster, SpatVector or sf")
   return(values)
 }
 
-set_domain <- function(values, domain = NULL, center = NULL) {
+set_layer_values <- function(data, values) {
+  if (class(data)[1] %in% c("SpatRaster")) {
+      values(data) <- values
+    } else if (class(data)[1] %in% c("SpatVector")) {
+      values(data)[[1]] <- values
+    } else if (class(data)[1] == "sf") {
+      data$values <- values
+    } else stop("Data is not of class SpatRaster, SpatVector or sf")
+  return(data)
+}
+
+set_domain <- function(values, domain = NULL, center = NULL, factor = NULL) {
+  if (!is.null(factor) && factor) {
+    # Necessary for keeping levels in order
+    domain <- ordered(levels(values), levels = levels(values))
+  }
   if (is.null(domain)) {
     # This is a very basic way to set domain. Look at toolbox for more robust layer-specific methods
     min <- min(values, na.rm = T)
     max <- max(values, na.rm = T)
     domain <- c(min, max)
   }
-  if (!is.null(center)) if (center == 0) {
+  if (!is.null(center) && center == 0) {
     extreme <- max(abs(domain))
     domain <- c(-extreme, extreme)
   }
   return(domain)
 }
 
-create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse = F) {
-  if (bins == 0) {
+create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse = F, breaks = NULL, factor = NULL) {
+  # if (!is.null(breaks)) bins <- length(breaks)
+  if (!is.null(factor) && factor) {
+      color_scale <- colorFactor(
+        palette = palette,
+        domain = domain,
+        levels = levels(layer_values),
+        na.color = 'transparent',
+        ordered = TRUE
+      )
+  } else if (bins == 0) {
     color_scale <- colorNumeric(
-      palette = colorRamp(palette, interpolate = "linear"),
+      # Why did I find it necessary to use colorRamp previously? For setting "linear"?
+      # palette = colorRamp(palette, interpolate = "linear"),
+      palette = palette,
       domain = domain,
       na.color = 'transparent',
       reverse = reverse) 
@@ -230,13 +286,24 @@ create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse
     color_scale <- colorBin(
       palette = palette,
       domain = domain,
-      bins = bins,
+      bins = if (!is.null(breaks)) breaks else bins,
       # Might want to turn pretty back on
       pretty = FALSE,
       na.color = 'transparent', reverse = reverse)         
   }
   return(color_scale)
 }
+
+label_maker <- function(x, levels = NULL, labels = NULL, suffix = NULL) {
+  # if (!is.null(labels)) {
+  #   index <- sapply(x, \(.x) which(levels == .x)) # Using R's new lambda functions!
+  #   x <- labels[index]
+  # }
+  if (!is.null(suffix)) {
+    x <- paste0(x, suffix)
+  }
+  return(x)
+  }
 
 add_aoi <- function(map, data = aoi, color = 'black', weight = 3, fill = F, dashArray = '12', ...) {
   addPolygons(map, data = data, color = color, weight = weight, fill = fill, dashArray = dashArray, ...)

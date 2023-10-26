@@ -210,7 +210,7 @@ print_slide_text(slide_texts$demographics$relative_wealth)
 economic_activity <- fuzzy_read(spatial_dir, "avg_rad_sum")
 
 add_economic_activity_layer <- create_layer_function(
-  data = economic_activity, yaml_key = "economic-activity",
+  data = economic_activity, yaml_key = "economic_activity",
   labFormat = labelFormat(digits = 2))
 all_maps <- add_economic_activity_layer(all_maps)
 added_layers <- c(added_layers, layer_params[["economic-activity"]]$group)
@@ -225,7 +225,7 @@ print_slide_text(slide_texts$economic_activity$economic_hotspots)
 
 ```{r}
 economic_change <- fuzzy_read(spatial_dir, "linfit")
-add_economic_change_layer <- create_layer_function(data = economic_change, yaml_key = "economic-change")
+add_economic_change_layer <- create_layer_function(data = economic_change, yaml_key = "economic_change")
 all_maps <- add_economic_change_layer(all_maps)
 added_layers <- c(added_layers, layer_params[["economic-change"]]$group)
 ```
@@ -233,6 +233,14 @@ added_layers <- c(added_layers, layer_params[["economic-change"]]$group)
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$economic_activity$economic_change)
+```
+
+### Social Distancing
+*(Need sample data)*
+
+```{r}
+#| output: asis
+# print_slide_text(slide_texts$demographics$social_distancing)
 ```
 
 ## Built Form
@@ -252,42 +260,258 @@ added_layers <- c(added_layers, layer_params[["wsf"]]$group)
 print_slide_text(slide_texts$built_form$wsf)
 ```
 
-<!-- ### Land Cover -->
+### Built-up Density
 
 ```{r}
-# lc <- fuzzy_read(spatial_dir, "landcover")
+#| include: false
+# impervious <- fuzzy_read(spatial_dir, "???")
+# add_impervious_layer <- create_layer_function(data = impervious, yaml_key = "impervious")
 
-#   lc_values <- c(
-#     # 'No data' = 0,
-#     'Tree cover' = 10,
-#     'Shrubland' = 20,
-#     'Grassland' = 30,
-#     'Cropland' = 40,
-#     'Built-up' = 50,
-#     'Bare/sparse vegetation' = 60,
-#     'Snow and ice' = 70,
-#     'Permanent water bodies' = 80,
-#     'Herbaceous wetland' = 90,
-#     'Mangroves' = 95)
-#   lc_colors <- colorFactor(
-#     palette = c(
-#       '0'  = 'transparent', # 'No data'
-#       '10' = '#277242', # 'Tree cover'
-#       '20' = '#DEBA59', # 'Shrubland'
-#       '30' = '#79A54F', # 'Grassland'
-#       '40' = '#E88B39', # 'Cropland'
-#       '50' = '#C62421', # 'Built-up'
-#       '60' = '#9C9085', # 'Bare/sparse vegetation'
-#       '70' = '#DDDDDD', # 'Snow and ice'
-#       '80' = '#2491D7', # 'Permanent water bodies'
-#       '90' = '#707CBA', # 'Herbaceous wetland'
-#       '95' = '#00C86E', # 'Mangroves'
-#       '100' = '#f6e8a1' # 'Moss and Lichen'),
-#     levels = c(10*0:9, 95),
-#     na.color = '#00000000')
+# all_maps <- add_impervious_layer(all_maps)
+# added_layers <- c(added_layers, "built-up-density")
+```
 
-# add_lc_layer <- create_layer_function(data = lc, yaml_key = "lc", color_scale = lc_colors)
-# add_lc_layer(all_maps)
+```{r}
+#| output: asis
+print_slide_text(slide_texts$built_form$builtup_density)
+```
+
+### Land Cover
+
+```{r}
+land_cover <- fuzzy_read(spatial_dir, "landcover")
+add_land_cover_layer <- create_layer_function(data = land_cover, yaml_key = "land_cover")
+all_maps <- add_land_cover_layer(all_maps)
+added_layers <- c(added_layers, "land-cover")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$built_form$land_cover)
+```
+
+### Intersection Density
+
+```{r}
+#| include: false
+# ERROR
+# intersections <- fuzzy_read(spatial_dir, "nodes", FUN = st_read)
+# add_intersections_layer <- create_layer_function(data = intersections, yaml_key = "intersections")
+
+# all_maps <- add_intersections_layer(all_maps)
+# added_layers <- c(added_layers, "intersection-density")
+```
+
+```{r}
+#| output: asis
+# print_slide_text(slide_texts$built_form$intersections)
+```
+
+### Access to Schools
+
+```{r}
+#| include: false
+# NON-STANDARD: Need to combine three separate shapefiles
+schools_800 <- fuzzy_read(spatial_dir, "schools_isochrones_800", FUN = vect)
+schools_1600 <- fuzzy_read(spatial_dir, "schools_isochrones_1600", FUN = vect)
+schools_2400 <- fuzzy_read(spatial_dir, "schools_isochrones_2400", FUN = vect)
+
+# plot(c(schools_800, schools_1600, schools_2400))
+
+add_pop_layer <- create_layer_function(data = pop, yaml_key = "population")
+
+all_maps <- add_pop_layer(all_maps)
+added_layers <- c(added_layers, "access-to-schools")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$built_form$schools)
+```
+
+### Access to Healthcare
+
+```{r}
+#| include: false
+# Copy whatever was done for schools
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$built_form$health_facilities)
+```
+
+## Climate Conditions
+
+### Solar Photovoltaic Potential
+
+```{r}
+#| include: false
+solar <- fuzzy_read(spatial_dir, "solar")
+add_solar_layer <- create_layer_function(data = solar, yaml_key = "solar")
+
+all_maps <- add_solar_layer(all_maps)
+added_layers <- c(added_layers, "solar-photovoltaic-potential")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$climate_conditions$solar)
+```
+
+### Air Quality
+
+```{r}
+#| include: false
+air_quality <- fuzzy_read(spatial_dir, "air_quality")
+add_air_quality_layer <- create_layer_function(data = air_quality, yaml_key = "air_quality")
+
+all_maps <- add_air_quality_layer(all_maps)
+added_layers <- c(added_layers, "air-quality")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$climate_conditions$air_quality)
+```
+
+### Summer Surface Temperature
+
+```{r}
+#| include: false
+summer_lst_file <- fuzzy_read(spatial_dir, "Summer_LST", FUN = paste)
+summer_lst <- rast_as_vect(summer_lst_file, digits = 1)
+summer_lst_resample <- rast(summer_lst_file) %>%
+  aggregate(fact = 4, fun = "max") %>% # Is this the right function choice?
+  as.polygons(digits = 0)
+
+add_summer_lst_layer <- create_layer_function(data = summer_lst_resample, yaml_key = "summer_lst")
+
+all_maps <- add_summer_lst_layer(all_maps)
+added_layers <- c(added_layers, "summer-surface-temperature")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$climate_conditions$summer_lst)
+```
+
+### Vegetated Areas
+
+```{r}
+#| include: false
+vegetation_file <- fuzzy_read(spatial_dir, "ndvi", paste)
+vegetation <- rast(vegetation_file) %>%
+  aggregate(fact = 10, fun = "mean") %>%
+  as.polygons(digits = 2, aggregate = T) # Is this larger with/without aggregate?
+add_vegetation_layer <- create_layer_function(data = vegetation, yaml_key = "vegetation")
+
+all_maps <- add_vegetation_layer(all_maps)
+added_layers <- c(added_layers, "vegetated-areas")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$climate_conditions$vegetation)
+```
+
+# Forests & Deforestation
+```{r}
+#| include: false
+forest <- fuzzy_read(spatial_dir, "CurrentForest")
+forest <- forest[forest[[1]] == 1,] # Select only forest cells
+add_forest_layer <- create_layer_function(data = forest, yaml_key = "forest")
+all_maps <- add_forest_layer(all_maps)
+
+deforest <- fuzzy_read(spatial_dir, "LossYear")
+deforest[[1]] <- deforest[[1]] + 2000 # The file only shows the 1s and 10s column for the year
+add_deforest_layer <- create_layer_function(data = deforest, yaml_key = "deforest")
+all_maps <- add_deforest_layer(all_maps)
+added_layers <- c(added_layers, "forests-deforestation")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$climate_conditions$forest)
+```
+
+## Risk Identification
+
+### Flooding
+*(I need to download the flood data)*
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk)
+```
+
+### Sea-level Rise
+*(Incomplete)*
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$sea_level_rise)
+```
+
+### Coastal Erosion
+*(Incomplete)*
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$coastal_erosion)
+```
+
+### Elevation
+
+```{r}
+#| include: false
+elevation <- fuzzy_read(spatial_dir, "elevation", FUN = rast)
+elevation <- as.contour(elevation)
+add_elevation_layer <- create_layer_function(data = elevation, yaml_key = "elevation")
+
+all_maps <- add_elevation_layer(all_maps)
+added_layers <- c(added_layers, "elevation")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$elevation)
+```
+
+### Slope
+
+```{r}
+#| include: false
+# FIX: Currently plotting as raster because much faster, but => no label on hover
+slope <- fuzzy_read(spatial_dir, "elevation", FUN = rast) %>%
+  terrain(v="slope") # %>%
+#   # as.polygons(digits = 1)
+#   as.polygons(aggregate = F)
+add_slope_layer <- create_layer_function(data = slope, yaml_key = "slope")
+
+all_maps <- add_slope_layer(all_maps)
+added_layers <- c(added_layers, "slope")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$slope)
+```
+
+### Landslides
+
+```{r}
+#| include: false
+landslides <- fuzzy_read(spatial_dir, "landslides")
+add_landslides_layer <- create_layer_function(data = landslides, yaml_key = "landslides")
+
+all_maps <- add_landslides_layer(all_maps)
+added_layers <- c(added_layers, "solar-photovoltaic-potential")
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$landslides)
 ```
 :::
 

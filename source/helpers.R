@@ -58,7 +58,3 @@ yaml_as_df <- function(yaml, print = F) {
   if(print) print(as.data.frame(tib), right = F)
   return(tib)
 }
-
-- Continuous data
-- Discrete data
-  - Pre-determined breaks
