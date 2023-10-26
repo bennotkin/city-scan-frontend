@@ -135,7 +135,7 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
       bins = params$bins,
       breaks = params$breaks,
       factor = params$factor,
-      levels = layer_values)
+      levels = levels(layer_values))
   }
 
   # CRC Workshop's app.R's raster_discrete() uses the following variables

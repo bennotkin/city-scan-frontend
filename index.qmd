@@ -312,16 +312,16 @@ print_slide_text(slide_texts$built_form$land_cover)
 ```{r}
 #| include: false
 # NON-STANDARD: Need to combine three separate shapefiles
-schools_800 <- fuzzy_read(spatial_dir, "schools_isochrones_800", FUN = vect)
-schools_1600 <- fuzzy_read(spatial_dir, "schools_isochrones_1600", FUN = vect)
-schools_2400 <- fuzzy_read(spatial_dir, "schools_isochrones_2400", FUN = vect)
+# schools_800 <- fuzzy_read(spatial_dir, "schools_isochrones_800", FUN = vect)
+# schools_1600 <- fuzzy_read(spatial_dir, "schools_isochrones_1600", FUN = vect)
+# schools_2400 <- fuzzy_read(spatial_dir, "schools_isochrones_2400", FUN = vect)
 
-# plot(c(schools_800, schools_1600, schools_2400))
+# # plot(c(schools_800, schools_1600, schools_2400))
 
-add_pop_layer <- create_layer_function(data = pop, yaml_key = "population")
+# add_schools_layer <- create_layer_function(data = schools, yaml_key = "schools")
 
-all_maps <- add_pop_layer(all_maps)
-added_layers <- c(added_layers, "access-to-schools")
+# all_maps <- add_schools_layer(all_maps)
+# added_layers <- c(added_layers, "access-to-schools")
 ```
 
 ```{r}
