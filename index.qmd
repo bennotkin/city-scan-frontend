@@ -51,7 +51,7 @@ useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; I
 ```
 
 ---
-title: "`r paste(city, country, sep = ", ")` City Scan"
+title: "`r paste(city, country, sep = ', ')` City Scan"
 ---
 
 ```{r}
@@ -213,7 +213,7 @@ add_economic_activity_layer <- create_layer_function(
   data = economic_activity, yaml_key = "economic_activity",
   labFormat = labelFormat(digits = 2))
 all_maps <- add_economic_activity_layer(all_maps)
-added_layers <- c(added_layers, layer_params[["economic-activity"]]$group)
+added_layers <- c(added_layers, layer_params[["economic_activity"]]$group_id)
 ```
 
 ```{r}
@@ -227,7 +227,7 @@ print_slide_text(slide_texts$economic_activity$economic_hotspots)
 economic_change <- fuzzy_read(spatial_dir, "linfit")
 add_economic_change_layer <- create_layer_function(data = economic_change, yaml_key = "economic_change")
 all_maps <- add_economic_change_layer(all_maps)
-added_layers <- c(added_layers, layer_params[["economic-change"]]$group)
+added_layers <- c(added_layers, layer_params[["economic_change"]]$group_id)
 ```
 
 ```{r}
@@ -252,7 +252,7 @@ wsf <- fuzzy_read(spatial_dir, "WSF.*4326")
 values(wsf)[values(wsf) == 0] <- NA
 add_wsf_layer <- create_layer_function(data = wsf, yaml_key = "wsf")
 all_maps <- add_wsf_layer(all_maps)
-added_layers <- c(added_layers, layer_params[["wsf"]]$group)
+added_layers <- c(added_layers, layer_params[["wsf"]]$group_id)
 ```
 
 ```{r}
@@ -506,7 +506,7 @@ landslides <- fuzzy_read(spatial_dir, "landslides")
 add_landslides_layer <- create_layer_function(data = landslides, yaml_key = "landslides")
 
 all_maps <- add_landslides_layer(all_maps)
-added_layers <- c(added_layers, "solar-photovoltaic-potential")
+added_layers <- c(added_layers, "landslides")
 ```
 
 ```{r}

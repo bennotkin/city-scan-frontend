@@ -54,6 +54,7 @@ social_distancing:
   title: Difficulty of Social Distancing
   palette: ['#ffffbf', '#de8250', '#a80000', '#82003b', '#4d0073']
   bins: 5
+  group_id: social-distancing
 # SECTION 5 BUILT FORM
 wsf:
   fuzzy_string: 'WSF.*4326'
@@ -85,6 +86,7 @@ intersections:
   title: Intersection Density
   subtitle: Number of intersections per 1 km^2^
   palette: ['#ffffff', '#9F4830']
+  group_id: intersection-density
 schools:
   title: Travel distance to nearest school
   subtitle: Distance along road network in meters
@@ -92,6 +94,7 @@ schools:
   breaks: [800, 1600, 2400]
   # How do I indicate shading?
   suffix: ' m'
+  group_id: access-to-schools
 health_facilities:
   title: Travel distance to nearest health facility
   subtitle: Distance along road network
@@ -99,12 +102,14 @@ health_facilities:
   breaks: [1, 2, 3]
   # How do I indicate shading?
   suffix: ' km'
+  group_id: access-to-healthcare
 # SECTION 6 CLIMATE CONDITIONS
 solar:
-  title: 'Photovoltatic Potential'
+  title: 'Photovoltaic Potential'
   subtitle: Power potential of a theoretical 1 kWp PV system (kWh)
   bins: 3
   palette: ['#ffebcc', '#f07605']
+  group_id: solar-photovoltaic-potential
 air_quality:
   fuzzy_string: air_quality
   title: 'Concentrations of PM2.5 particles in 2019'
@@ -112,6 +117,7 @@ air_quality:
   # domain: [0,200]
   palette: ['#fff4d1', '#f5cbab', '#e6a58c', '#d48172', '#c46673', '#ba6685', '#a86595', '#9467ab']
   breaks: [0, 5, 10, 15, 20, 30, 40, 50, 100]
+  group_id: air-quality
 summer_lst:
   # palette: 'Spectral'
   palette: ['#5290C2', '#F0EE80', '#D33837']
@@ -119,6 +125,7 @@ summer_lst:
   title: 'Summer surface temperature<br>2017–2021'
   subtitle: 'Mean temperature (°C)'
   suffix: '°C'
+  group_id: summer-surface-temperature
 vegetation:
   fuzzy_string: ndvi
   title: Vegetated Areas
@@ -126,6 +133,7 @@ vegetation:
   palette: ['#9999cc', '#f0f8d1', '#c2e3b8', '#87c27e', '#54a159', '#2e6a34']
   breaks: [-1, 0.015, 0.14, 0.18, 0.27, 0.36, 1]
   labels: ['Water', 'Built-up', 'Barren', 'Shrub and Grassland', 'Sparse', 'Dense']
+  group_id: vegetated-areas
 forest: # Requires preprocessing to combine forest and deforestation?
   fuzzy_string: CurrentForest
   title: "Forest cover"
@@ -170,6 +178,7 @@ elevation: # how to indicate contours?
   # fill: FALSE
   stroke: '#000000'
   weight: 1
+  group_id: elevation
 slope:
   title: Slope
   subtitle: 'Angle of hillside in degrees'
@@ -177,6 +186,7 @@ slope:
   palette: ['#ffffd4', '#993404']
   bins: 5
   suffix: '°'
+  group_id: slope
 landslides:
   fuzzy_string: landslides
   title: Landslide susceptibility
@@ -184,9 +194,11 @@ landslides:
   palette: ['#FCEFE2', '#F2C08C', '#E89251', '#D66136', '#993F2B']
   labels: ['Very low', 'Low', 'Medium', 'High', 'Very high']
   breaks: [0, 1, 2, 3, 4]
+  group_id: landslides
 road_network_criticality:
   title: Road network segment criticality
   subtitle: 'Criticality %'
   palette: ['#C5D1E9', '#8696C8', '#516BAE', '#9C2F76', '#CE3737']
   suffix: "%"
+  group_id: road-network-criticality
 # SECTION 8 LOCAL INSTITUTIONS AND PLANNING

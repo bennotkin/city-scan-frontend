@@ -134,7 +134,8 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
       # bins = if (is.null(params$breaks)) params$bins else params$breaks
       bins = params$bins,
       breaks = params$breaks,
-      factor = params$factor)
+      factor = params$factor,
+      levels = layer_values)
   }
 
   # CRC Workshop's app.R's raster_discrete() uses the following variables
@@ -264,13 +265,13 @@ set_domain <- function(values, domain = NULL, center = NULL, factor = NULL) {
   return(domain)
 }
 
-create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse = F, breaks = NULL, factor = NULL) {
+create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse = F, breaks = NULL, factor = NULL, levels = NULL) {
   # if (!is.null(breaks)) bins <- length(breaks)
   if (!is.null(factor) && factor) {
       color_scale <- colorFactor(
         palette = palette,
         domain = domain,
-        levels = levels(layer_values),
+        levels = levels,
         na.color = 'transparent',
         ordered = TRUE
       )
