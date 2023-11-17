@@ -6,7 +6,7 @@ The primary file is `index.qmd` which Quarto converts to HTML; `index.qmd` is a 
 
 If your computer environment is all set up for it (similarly enough to mine), you could simply render the site by running `quarto render index.qmd`.
 
-It is likely, though, that your computer is not set up like mine, in which case: cue **docker**. Docker allows us to create an image of the necessary computing environment, with all the appropriate dependencies, for our purposes. We can run this image as a container, and in that container render the site. (See [Building contaner locally](#building-container-locally) and [Running container locally](#running-container-locally)).
+It is likely, though, that your computer is not set up like mine, in which case: cue **docker**. Docker allows us to create an image of the necessary computing environment, with all the appropriate dependencies, for our purposes. We can run this image as a container, and in that container render the site. (See [Building container locally](#building-container-locally) and [Running container locally](#running-container-locally)).
 
 But what if you don't want to run locally *at all*!? Running locally means you still need to get the raster files from somewhere, and they're being processed on Google Cloud. So that introduces the second level (third? fourth?) level of abstraction: we run the docker container on **Google Cloud**.
 

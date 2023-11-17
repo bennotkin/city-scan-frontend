@@ -15,10 +15,11 @@ template:
   fill: defaults to T, only use if you want to set fill to FALSE
   stroke: 'TRUE if variable, color if static (defaults to FALSE)'
   weight: stroke weight
+  suffix: NULL
   # Potentially: NULL
   domain: NULL
   labFormat: NULL
-  suffix: NULL
+  crop: crop domain to layer values - default of  
   # resolution or resolution_factor
 # SECTION 3 DEMOGRAPHICS
 population:

@@ -51,7 +51,7 @@ useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; I
 ```
 
 ---
-title: "`r paste(city, country, sep = ', ')` City Scan"
+title: "`r paste(city, country, sep = ', ')`, City Scan"
 ---
 
 ```{r}
@@ -522,7 +522,7 @@ all_maps %>%
   add_aoi() %>%
   addLayersControl(
     overlayGroups = added_layers,
-    options = layersControlOptions(collapsed = FALSE))
+    options = layersControlOptions(collapsed = TRUE))
 
   # If I want to use javascript directly I could use htmlwidgets::onRender(),
   # or maybe just an observable cell
