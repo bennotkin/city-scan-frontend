@@ -9,7 +9,6 @@ execute:
 ---
 
 ::: setup
-{{< include source/scrollytelling.qmd >}}
 
 ```{r}
 #| include: false
@@ -188,19 +187,4 @@ basemap %>% add_economic_change_layer() %>% add_aoi()
 print_slide_text(slide_texts$economic_activity$economic_change)
 ```
 
-
-:::
-
-::: maps
-```{r}
-#| output: true
-basemap %>%
-  add_aoi() %>%
-  addLayersControl(
-    overlayGroups = added_layers,
-    options = layersControlOptions(collapsed = TRUE))
-
-  # If I want to use javascript directly I could use htmlwidgets::onRender(),
-  # or maybe just an observable cell
-```
 :::
