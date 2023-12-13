@@ -41,10 +41,17 @@ layer_params <- read_yaml('source/layers.yml')
 ```{r}
 #| include: false
 # Visualization parameters (Am I using all of them?)
+# Interactivve Plots (Leaflet)
 basemap_opacity <- 0.3
 legend_opacity <- 0.8
 vwidth <- 900
 vheight <- vwidth
+
+# Static map
+layer_alpha <- 0.8
+map_width <- 6.9
+map_height <- 5.9
+aspect_ratio <- map_width / map_height
 
 # this is to enable fractional zoom in mapshot
 useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; InfoPath.2; SLCC1; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET CLR 2.0.50727) 3gpp-gba UNTRUSTED/1.0'
@@ -67,9 +74,13 @@ slide_texts <- merge_lists(city_text, generic_text)
 # Define the AOI
 aoi <- st_read(paste_path(user_input_dir, "AOI"))
 aoi_bounds <- st_bbox(aoi)
+static_map_bounds <- aspect_buffer(aoi, aspect_ratio, buffer_percent = 0.05)
 
-# Inititate the map here, will build on it in each "slide"
+# Create basemaps
+## Interactive: Inititate the map here, will build on it in each "slide"
 all_maps <- plot_basemap("vector")
+## Static:
+tiles <- annotation_map_tile(type = "cartolight", zoom = 12)
 
 # Keep track of added layers
 added_layers <- c()
@@ -166,13 +177,18 @@ print_slide_text(slide_texts$demographics$population_distribution_age_sex)
 #| include: false
 # Read population data
 # Eventually, move fuzzy_read inside of create_layer_function
-pop <- fuzzy_read(spatial_dir, "population")
-add_pop_layer <- create_layer_function(data = pop, yaml_key = "population")
+pop <- fuzzy_read(spatial_dir, "population", rast)
 
+# Interactive Plot (Leaflet)
+add_pop_layer <- create_layer_function(data = rast_as_vect(pop), yaml_key = "population")
 all_maps <- add_pop_layer(all_maps)
   # This could be put into the add_*_layer() functions themselves
   # hideGroup("population-density")
 added_layers <- c(added_layers, "population-density")
+
+# Static plot (PNG)
+plot_pop <- plot_static(data = pop, yaml_key = "population")
+save_plot(plot = plot_pop, filename = "pop.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -187,14 +203,19 @@ print_slide_text(slide_texts$demographics$population_density)
 # Read RWI
 # (Necessary to include ["rwi"] because shapefile has multiple layers)
 rwi <- fuzzy_read(spatial_dir, "relative_wealth", FUN = vect)["rwi"]
+
+# Interactive Plot (Leaflet)
 add_rwi_layer <- create_layer_function(
   data = rwi, yaml_key = "rwi",
   labFormat = labelFormat(digits = 1))
-
 all_maps <- add_rwi_layer(all_maps)
   # This could be put into the add_*_layer() functions themselves
   # hideGroup("relative-wealth-index")
 added_layers <- c(added_layers, layer_params[["rwi"]]$group)
+
+# Static plot (PNG)
+plot_rwi <- plot_static(data = rwi, yaml_key = "rwi") #+ theme(legend.position = "none")
+save_plot(plot = plot_rwi, filename = "rwi.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -207,13 +228,18 @@ print_slide_text(slide_texts$demographics$relative_wealth)
 ### Economic Hotspots
 
 ```{r}
-economic_activity <- fuzzy_read(spatial_dir, "avg_rad_sum")
+economic_activity <- fuzzy_read(spatial_dir, "avg_rad_sum", rast)
 
+# Interactive Plot (Leaflet)
 add_economic_activity_layer <- create_layer_function(
-  data = economic_activity, yaml_key = "economic_activity",
+  data = rast_as_vect(economic_activity), yaml_key = "economic_activity",
   labFormat = labelFormat(digits = 2))
 all_maps <- add_economic_activity_layer(all_maps)
 added_layers <- c(added_layers, layer_params[["economic_activity"]]$group_id)
+
+# Static plot (PNG)
+plot_economic_activity <- plot_static(data = economic_activity, yaml_key = "economic_activity")
+save_plot(plot = plot_economic_activity, filename = "economic_activity.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -224,10 +250,16 @@ print_slide_text(slide_texts$economic_activity$economic_hotspots)
 ### Change in Economic Hotspots
 
 ```{r}
-economic_change <- fuzzy_read(spatial_dir, "linfit")
-add_economic_change_layer <- create_layer_function(data = economic_change, yaml_key = "economic_change")
+economic_change <- fuzzy_read(spatial_dir, "linfit", rast)
+
+# Interactive Plot (Leaflet)
+add_economic_change_layer <- create_layer_function(data = rast_as_vect(economic_change), yaml_key = "economic_change")
 all_maps <- add_economic_change_layer(all_maps)
 added_layers <- c(added_layers, layer_params[["economic_change"]]$group_id)
+
+# Static plot (PNG)
+plot_economic_change <- plot_static(data = economic_change, yaml_key = "economic_change")
+save_plot(plot = plot_economic_change, filename = "economic_change.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -248,11 +280,17 @@ print_slide_text(slide_texts$economic_activity$economic_change)
 ### Urban Extent and Change
 
 ```{r}
-wsf <- fuzzy_read(spatial_dir, "WSF.*4326")
+wsf <- fuzzy_read(spatial_dir, "WSF.*4326", rast)
 values(wsf)[values(wsf) == 0] <- NA
-add_wsf_layer <- create_layer_function(data = wsf, yaml_key = "wsf")
+
+# Interactive Plot (Leaflet)
+add_wsf_layer <- create_layer_function(data = rast_as_vect(wsf), yaml_key = "wsf")
 all_maps <- add_wsf_layer(all_maps)
 added_layers <- c(added_layers, layer_params[["wsf"]]$group_id)
+
+# Static plot (PNG)
+plot_wsf <- plot_static(data = wsf, yaml_key = "wsf")
+save_plot(plot = plot_wsf, filename = "wsf.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -279,10 +317,16 @@ print_slide_text(slide_texts$built_form$builtup_density)
 ### Land Cover
 
 ```{r}
-land_cover <- fuzzy_read(spatial_dir, "landcover")
-add_land_cover_layer <- create_layer_function(data = land_cover, yaml_key = "land_cover")
+land_cover <- fuzzy_read(spatial_dir, "landcover", rast)
+
+# Interactive Plot (Leaflet)
+add_land_cover_layer <- create_layer_function(data = rast_as_vect(land_cover), yaml_key = "land_cover")
 all_maps <- add_land_cover_layer(all_maps)
 added_layers <- c(added_layers, "land-cover")
+
+# Static plot (PNG)
+plot_land_cover <- plot_static(data = land_cover, yaml_key = "land_cover")
+save_plot(plot = plot_land_cover, filename = "land_cover.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -347,11 +391,16 @@ print_slide_text(slide_texts$built_form$health_facilities)
 
 ```{r}
 #| include: false
-solar <- fuzzy_read(spatial_dir, "solar")
-add_solar_layer <- create_layer_function(data = solar, yaml_key = "solar")
+solar <- fuzzy_read(spatial_dir, "solar", rast)
 
+# Interactive Plot (Leaflet)
+add_solar_layer <- create_layer_function(data = rast_as_vect(solar), yaml_key = "solar")
 all_maps <- add_solar_layer(all_maps)
 added_layers <- c(added_layers, "solar-photovoltaic-potential")
+
+# Static plot (PNG)
+plot_solar <- plot_static(data = solar, yaml_key = "solar")
+save_plot(plot = plot_solar, filename = "solar.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -363,11 +412,16 @@ print_slide_text(slide_texts$climate_conditions$solar)
 
 ```{r}
 #| include: false
-air_quality <- fuzzy_read(spatial_dir, "air_quality")
-add_air_quality_layer <- create_layer_function(data = air_quality, yaml_key = "air_quality")
+air_quality <- fuzzy_read(spatial_dir, "air_quality", rast)
 
+# Interactive Plot (Leaflet)
+add_air_quality_layer <- create_layer_function(data = air_quality, yaml_key = "air_quality")
 all_maps <- add_air_quality_layer(all_maps)
 added_layers <- c(added_layers, "air-quality")
+
+# Static plot (PNG)
+plot_air_quality <- plot_static(data = air_quality, yaml_key = "air_quality")
+save_plot(plot = plot_air_quality, filename = "air_quality.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -379,16 +433,19 @@ print_slide_text(slide_texts$climate_conditions$air_quality)
 
 ```{r}
 #| include: false
-summer_lst_file <- fuzzy_read(spatial_dir, "Summer_LST", FUN = paste)
-summer_lst <- rast_as_vect(summer_lst_file, digits = 1)
-summer_lst_resample <- rast(summer_lst_file) %>%
+summer_lst <- fuzzy_read(spatial_dir, "Summer_LST", FUN = rast)
+
+# Interactive Plot (Leaflet)
+summer_lst_resample <- summer_lst %>%
   aggregate(fact = 4, fun = "max") %>% # Is this the right function choice?
   as.polygons(digits = 0)
-
 add_summer_lst_layer <- create_layer_function(data = summer_lst_resample, yaml_key = "summer_lst")
-
 all_maps <- add_summer_lst_layer(all_maps)
 added_layers <- c(added_layers, "summer-surface-temperature")
+
+# Static plot (PNG)
+plot_summer_lst <- plot_static(data = summer_lst, yaml_key = "summer_lst")
+save_plot(plot = plot_summer_lst, filename = "summer_lst.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -400,14 +457,19 @@ print_slide_text(slide_texts$climate_conditions$summer_lst)
 
 ```{r}
 #| include: false
-vegetation_file <- fuzzy_read(spatial_dir, "ndvi", paste)
-vegetation <- rast(vegetation_file) %>%
+vegetation <- fuzzy_read(spatial_dir, "ndvi", rast)
+
+# Interactive Plot (Leaflet)
+vegetation_poly <- vegetation %>%
   aggregate(fact = 10, fun = "mean") %>%
   as.polygons(digits = 2, aggregate = T) # Is this larger with/without aggregate?
-add_vegetation_layer <- create_layer_function(data = vegetation, yaml_key = "vegetation")
-
+add_vegetation_layer <- create_layer_function(data = vegetation_poly, yaml_key = "vegetation")
 all_maps <- add_vegetation_layer(all_maps)
 added_layers <- c(added_layers, "vegetated-areas")
+
+# Static plot (PNG)
+plot_vegetation <- plot_static(data = vegetation, yaml_key = "vegetation")
+save_plot(plot = plot_vegetation, filename = "vegetation.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -418,16 +480,32 @@ print_slide_text(slide_texts$climate_conditions$vegetation)
 # Forests & Deforestation
 ```{r}
 #| include: false
-forest <- fuzzy_read(spatial_dir, "CurrentForest")
-forest <- forest[forest[[1]] == 1,] # Select only forest cells
-add_forest_layer <- create_layer_function(data = forest, yaml_key = "forest")
+forest <- fuzzy_read(spatial_dir, "CurrentForest", rast)
+values(forest)[values(forest) == 0] <- NA
+
+# Interactive Plot (Leaflet)
+add_forest_layer <- create_layer_function(data = rast_as_vect(forest), yaml_key = "forest")
 all_maps <- add_forest_layer(all_maps)
 
-deforest <- fuzzy_read(spatial_dir, "LossYear")
+# Static plot (PNG)
+plot_forest <- plot_static(data = forest, yaml_key = "forest")
+save_plot(plot = plot_forest, filename = "forest.png", directory = styled_maps_dir)
+
+deforest <- fuzzy_read(spatial_dir, "LossYear", rast)
 deforest[[1]] <- deforest[[1]] + 2000 # The file only shows the 1s and 10s column for the year
-add_deforest_layer <- create_layer_function(data = deforest, yaml_key = "deforest")
+deforest[[1]][deforest[[1]] == 2000] <- NA
+
+# Interactive Plot (Leaflet)
+add_deforest_layer <- create_layer_function(data = rast_as_vect(deforest), yaml_key = "deforest")
 all_maps <- add_deforest_layer(all_maps)
 added_layers <- c(added_layers, "forests-deforestation")
+
+# Static plot (PNG)
+plot_deforest <- plot_static(deforest, "deforest")
+save_plot(plot = plot_deforest, filename = "deforest.png", directory = styled_maps_dir)
+
+plot_forest_deforest <- plot_static(deforest, "deforest", baseplot = plot_forest)
+save_plot(plot = plot_forest_deforest, filename = "forest_deforest.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -466,11 +544,20 @@ print_slide_text(slide_texts$risk_identification$coastal_erosion)
 ```{r}
 #| include: false
 elevation <- fuzzy_read(spatial_dir, "elevation", FUN = rast)
-elevation <- as.contour(elevation)
-add_elevation_layer <- create_layer_function(data = elevation, yaml_key = "elevation")
+elev_breaks <- break_pretty2(values(elevation), method = "interval")
+for (i in seq_along(elev_breaks)) {
+    elevation[elevation >= elev_breaks[i] & elevation < c(elev_breaks, 1e6)[i+1]] <- elev_breaks[i]
+}
+elevation <- as.polygons(elevation)
 
+# Interactive Plot (Leaflet)
+add_elevation_layer <- create_layer_function(data = elevation, yaml_key = "elevation")
 all_maps <- add_elevation_layer(all_maps)
 added_layers <- c(added_layers, "elevation")
+
+# Static plot (PNG)
+plot_elevation <- plot_static(data = elevation, yaml_key = "elevation", breaks = elev_breaks)
+save_plot(plot = plot_elevation, filename = "elevation.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -484,13 +571,16 @@ print_slide_text(slide_texts$risk_identification$elevation)
 #| include: false
 # FIX: Currently plotting as raster because much faster, but => no label on hover
 slope <- fuzzy_read(spatial_dir, "elevation", FUN = rast) %>%
-  terrain(v="slope") # %>%
-#   # as.polygons(digits = 1)
-#   as.polygons(aggregate = F)
-add_slope_layer <- create_layer_function(data = slope, yaml_key = "slope")
+  terrain(v="slope")
 
+# Interactive Plot (Leaflet)
+add_slope_layer <- create_layer_function(data = slope, yaml_key = "slope")
 all_maps <- add_slope_layer(all_maps)
 added_layers <- c(added_layers, "slope")
+
+# Static plot (PNG)
+plot_slope <- plot_static(data = slope, yaml_key = "slope")
+save_plot(plot = plot_slope, filename = "slope.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -502,11 +592,16 @@ print_slide_text(slide_texts$risk_identification$slope)
 
 ```{r}
 #| include: false
-landslides <- fuzzy_read(spatial_dir, "landslides")
-add_landslides_layer <- create_layer_function(data = landslides, yaml_key = "landslides")
+landslides <- fuzzy_read(spatial_dir, "landslides", rast)
 
+# Interactive Plot (Leaflet)
+add_landslides_layer <- create_layer_function(data = rast_as_vect(landslides), yaml_key = "landslides")
 all_maps <- add_landslides_layer(all_maps)
 added_layers <- c(added_layers, "landslides")
+
+# Static plot (PNG)
+plot_landslides <- plot_static(data = landslides, yaml_key = "landslides")
+save_plot(plot = plot_landslides, filename = "landslides.png", directory = styled_maps_dir)
 ```
 
 ```{r}

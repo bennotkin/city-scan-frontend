@@ -25,7 +25,7 @@ template:
 population:
   fuzzy_string: population
   title: 'Population density'
-  subtitle: 'Number of persons per 10,000 m^2'
+  subtitle: 'Number of persons per 10,000 m^2^'
   palette: ['#ECEB72', '#8E3933']
   basemap: 'satellite'
   group_id: 'population-density'
@@ -138,8 +138,11 @@ vegetation:
 forest: # Requires preprocessing to combine forest and deforestation?
   fuzzy_string: CurrentForest
   title: "Forest cover"
-  # breaks: [0, 1]
-  palette: ['#8CC056']
+  breaks: [0, 1]
+  # bins: 2
+  # center: .75
+  palette: ['transparent', '#8CC056']
+  labels: ['', 'Current Forest']
   factor: TRUE
   group_id: 'forests-deforestation'
 deforest: # Requires preprocessing to combine forest and deforestation?
@@ -184,6 +187,7 @@ slope:
   title: Slope
   subtitle: 'Angle of hillside in degrees'
   breaks: [0, 2, 5, 10, 20, 90]
+  labels: ['<2°', '2–5°', '5–10', '10–20°', '>20°']
   palette: ['#ffffd4', '#993404']
   bins: 5
   suffix: '°'

@@ -7,6 +7,9 @@ library(stringr)
 # library(mapview)
 library(dplyr)
 library(plotly)
+library(ggspatial)
+library(tidyterra)
+library(cowplot)
 
 # Map Functions ----
 # Function for reading rasters with fuzzy names
@@ -49,7 +52,11 @@ fuzzy_read <- function(spatial_dir, fuzzy_string, FUN = rast_as_vect, path = T, 
 #   }
 # }
 
-rast_as_vect <- function(filename, digits = 8, ...) as.polygons(rast(filename, ...), digits = digits)
+rast_as_vect <- function(x, digits = 8, ...) {  
+  if (is.character(x)) x <- rast(x, ...)
+  out <- as.polygons(x, digits = digits)
+  return(out)
+}
 
 # round_up_breaklist <- function(breaklist, tonum = 10) {
 #   last <- -1000
@@ -87,9 +94,7 @@ plot_basemap <- function(basemap_style = "vector") {
   return(basemap)
 }
 
-create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, message = F, fuzzy_string = NULL, ...) {  
-  if (message) message("Check if data is in EPSG:3857; if not, raster is being re-projected")
-
+prepare_parameters <- function(yaml_key, ...) {
   # Override the layers.yaml parameters with arguments provided to ...
   # Parameters include bins, breaks, center, color_scale, domain, labFormat, and palette
   layer_params <- read_yaml('source/layers.yml')
@@ -104,9 +109,20 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
     # params$bins <- if(is.null(params$breaks)) 0 else NULL
   }
   if (is.null(params$labFormat)) params$labFormat <- labelFormat()
+  if (is.null(params$stroke)) params$stroke <- NA
   # if (!is.null(params$factor) && params$factor) {
   #   params$labFormat <- function(type, levels) {return(params$labels)}
   # }
+
+  return(params)
+}
+
+create_layer_function <- function(data, yaml_key = NULL, params = NULL, color_scale = NULL, message = F, fuzzy_string = NULL, ...) {  
+  if (message) message("Check if data is in EPSG:3857; if not, raster is being re-projected")
+
+  if (is.null(params)) {
+    params <- prepare_parameters(yaml_key, ...)
+  }
 
   if (!is.null(params$factor) && params$factor) {
     data <- 
@@ -124,7 +140,6 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
                         labels = params$labels,
                         suffix = params$suffix)
 
-
   if (is.null(color_scale)) {
     domain <- set_domain(layer_values, domain = params$domain, center = params$center, factor = params$factor)
     color_scale <- create_color_scale(
@@ -138,39 +153,7 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
       levels = levels(layer_values))
   }
 
-  # CRC Workshop's app.R's raster_discrete() uses the following variables
-  # What are each of these doing and do I need to use them?
-  # - map_id: this is Shiny specific and names the map
-  # - input_name: used to name the layer group (my group_id)
-  # - raster_var: the data
-  # - raster_col:
-      # discrete: vector of colors, or a color scale function for land cover
-      # continuous: color scale function
-  # - raster_val: 
-      # discrete: legend labels of provided colors
-      # continuous: the raster values (think it only needs to be domain)
-  
-  # for discrete rasters, legend labels; for continuous, the raster values
-  #   - this is used in the color_scale with raster_col(raster_val) and as the legend labels
-  #   - for the legend labels, need to match the colors in raster_col (same number)  -- it might
-  #     be helpful to just use dicitonaries instead (like I do with landcover in CRC)
-  # - leg_title: title for the legend
-  # - lab_suffix = '' : suffix to use for the labels
-
-  # Differences between raster_discrete and raster_continuous in app.r:
-  # - raster_col can be either a function or a character vector of colors
-  #   - if it is a function
-  #     - raster_continuous
-  #       - addLegend uses `pal` instead of `colors`
-  #       - addLegend uses `values` instead of `labels` (though maybe this could be changed?)
-  #     - raster_discrete
-  #       - addLegend uses `colors = raster_col(raster_val)`
-  #       - addLegend uses `labels = names(raster_val)`
-  #   - if it is not a function (so it's a character vector of colors)
-  # - raster_continuous: only takes functions
-  # - raster_discrete
-  #   - addLegend uses colors = color_scale(legend_values)
-  #   - addLegend uses labels = legend_values
+# I have moved the formerly-present note on lessons from the CRC Workshop code to my `Week of 2023-11-26` note in Obsidian.
 
 ### !!! I need to pull labels out because not always numeric so can't be signif
 
@@ -191,8 +174,8 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
             fill = if(is.null(params$fill) || params$fill) T else F,
             fillColor = ~color_scale(layer_values),
             fillOpacity = 0.9,
-            stroke = if(!is.null(params$stroke) && params$stroke != F) T else F,
-            color = if(!is.null(params$stroke) && params$stroke == T) ~color_scale(layer_values) else params$stroke,
+            stroke = if(!is.null(params$stroke) && !is.na(params$stroke) && params$stroke != F) T else F,
+            color = if(!is.null(params$stroke) && !is.na(params$stroke) && params$stroke == T) ~color_scale(layer_values) else params$stroke,
             weight = params$weight,
             opacity = 0.9,
             group = params$group_id,
@@ -223,6 +206,118 @@ create_layer_function <- function(data, yaml_key = NULL, color_scale = NULL, mes
   }
 
   return(layer_function)
+}
+
+create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
+  if (is.null(params)) {
+    params <- prepare_parameters(yaml_key, ...)
+  }
+  layer_values <- get_layer_values(data)
+  if (!is.null(params$factor) && params$factor) {
+    data <- 
+      set_layer_values(
+        data = data,
+        values = ordered(get_layer_values(data),
+                        levels = params$breaks,
+                        labels = params$labels))
+    params$palette <- setNames(params$palette, params$labels)
+  }
+  # Set palette transparency (but don't make transparent colors less transparent)
+  palette <- alpha(params$palette, layer_alpha)
+  palette[params$palette %in% c("transparent", "#FFFF", "#FFFFFFFF")] <- "transparent"
+
+  layer <-
+    if (class(data)[1] == "SpatVector") {
+      geom_spatvector(data = data, aes(fill = layer_values), color = params$stroke)
+    } else if (class(data)[1] == "SpatRaster") {
+      geom_spatraster(data = data)
+    }
+
+  title_broken <- str_replace_all(params$title, "(.{20}[^\\s]*)\\s", "\\1<br>")
+  subtitle_broken <- str_replace_all(params$subtitle, "(.{20}[^\\s]*)\\s", "\\1<br>")
+  title <- paste0(title_broken, "<br><br><em>", subtitle_broken, "</em>")
+
+  if(params$bins > 0 && is.null(params$breaks)) {
+    params$breaks <- break_pretty2(
+                data = layer_values, n = params$bins + 1, FUN = signif,
+                method = params$breaks_method %>% {if(is.null(.)) "quantile" else .})
+  }
+
+  fill_scale <-
+    if (!is.null(params$factor) && params$factor) {
+      print("Factor")
+      scale_fill_manual(values = palette, na.value = "transparent", name = title)
+    } else if (params$bins == 0) {
+        scale_fill_gradientn(
+          colors = palette,
+          rescaler = if (!is.null(params$center)) ~ scales::rescale_mid(.x, mid = params$center) else scales::rescale,
+          na.value = "transparent",
+          name = title)
+      # }
+    } else {
+    if (params$bins > 0) {
+        scale_fill_stepsn(
+          colors = palette,
+          breaks = if (is.null(params$breaks)) waiver() else params$breaks,
+          values = if (is.null(params$breaks)) NULL else scales::rescale(params$breaks),
+          limits = if (is.null(params$breaks)) NULL else c(min(params$breaks), max(params$breaks)),
+          rescaler = if (!is.null(params$center)) ~ scales::rescale_mid(.x, mid = params$center) else scales::rescale,
+          na.value = "transparent",
+          oob = scales::oob_squish,
+          name = title
+          )
+    }
+  }
+
+  legend_text_alignment <- if (
+      !is.null(params$labels) && is.character(params$labels)
+      | is.character(layer_values)) 0 else 1
+
+  theme = theme(
+    legend.title = ggtext::element_markdown(),
+    legend.text.align = legend_text_alignment)
+
+  return(list(layer = layer, scale = fill_scale, theme = theme))
+}
+
+plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, ...) {
+  params <- prepare_parameters(yaml_key = yaml_key, ...)
+  layer <- create_static_layer(data, params = params)
+  baseplot <- if (is.null(baseplot)) ggplot() + tiles else baseplot + ggnewscale::new_scale_fill()
+  p <- baseplot +
+        layer + 
+        geom_sf(data = static_map_bounds, fill = NA, color = NA) +
+        coord_sf(expand = F) +
+        annotation_north_arrow(style = north_arrow_minimal, location = "br", height = unit(1, "cm")) +
+        annotation_scale(style = "ticks", aes(unit_category = "metric", width_hint = 0.33), height = unit(0.25, "cm")) +        
+        theme(
+          # legend.key = element_rect(fill = "#FAFAF8"),
+          legend.justification = c("left", "bottom"),
+          legend.box.margin = margin(0, 0, 0, 12, unit = "pt"),
+          legend.margin = margin(4,0,4,0, unit = "pt"),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          axis.ticks.length = unit(0, "pt"),
+          plot.margin = margin(0,0,0,0))
+  if (!is.null(filename)) save_plot(filename = filename, plot = p, directory = styled_maps_dir)
+  return(p)
+}
+
+save_plot <- function(plot = NULL, filename, directory, rel_widths = c(3, 1)) {
+  # Saves plots with set legend widths
+
+  plot_layout <- plot_grid(
+    plot + theme(legend.position = "none"),
+    get_legend(plot),
+    rel_widths = rel_widths,
+    nrow = 1
+  )
+  
+  cowplot::save_plot(
+  plot = plot_layout,
+  filename = file.path(directory, filename),
+  base_height = map_height, base_width = sum(rel_widths)/rel_widths[1] * map_width
+  )
 }
 
 get_layer_values <- function(data) {
@@ -399,4 +494,79 @@ print_slide_text <- function(slide) {
     cat("\n")
   }
   if (!is.null(slide$footnote)) print_md(slide$footnote, div_class = "footnote")
+}
+
+aspect_buffer <- function(x, aspect_ratio, buffer_percent = 0) {
+  bounds_proj <- st_transform(st_as_sfc(st_bbox(x)), crs = 
+    "EPSG:3857")
+  center_proj <- st_coordinates(st_centroid(bounds_proj))
+
+  long_distance <-max(c(
+    st_distance(
+      st_point(st_bbox(bounds_proj)[c("xmin", "ymin")]),
+      st_point(st_bbox(bounds_proj)[c("xmax", "ymin")]))[1],
+    st_distance(
+      st_point(st_bbox(bounds_proj)[c("xmin", "ymax")]),
+      st_point(st_bbox(bounds_proj)[c("xmax", "ymax")]))[1]))
+  lat_distance <- max(c(
+    st_distance(
+      st_point(st_bbox(bounds_proj)[c("xmin", "ymin")]),
+      st_point(st_bbox(bounds_proj)[c("xmin", "ymax")]))[1],
+    st_distance(
+      st_point(st_bbox(bounds_proj)[c("xmax", "ymin")]),
+      st_point(st_bbox(bounds_proj)[c("xmax", "ymax")]))[1]))
+
+  if (long_distance/lat_distance < aspect_ratio) long_distance <- lat_distance * aspect_ratio
+  if (long_distance/lat_distance > aspect_ratio) lat_distance <- long_distance/aspect_ratio
+
+  new_bounds_proj <-
+  c(center_proj[,"X"] + (c(xmin = -1, xmax = 1) * long_distance/2 * (1 + buffer_percent)),
+  center_proj[,"Y"] + (c(ymin = -1, ymax = 1) * lat_distance/2 * (1 + buffer_percent)))
+
+  new_bounds <- st_bbox(new_bounds_proj, crs = "EPSG:3857") %>%
+    st_as_sfc() %>%
+    st_transform(crs = st_crs(x))
+
+  return(new_bounds)
+}
+
+# Alternatively could be two separate functions: pretty_interval() and pretty_quantile()
+break_pretty2 <- function(data, n = 6, method = "quantile", FUN = signif, digits = NULL, threshold = 1/(n-1)/4) {
+  divisions <- seq(from = 0, to = 1, length.out = n)
+
+  if (method == "quantile") breaks <- unname(stats::quantile(data, divisions, na.rm = T))
+  if (method == "interval") breaks <- divisions *
+    (max(data, na.rm = T) - min(data, na.rm = T)) +
+    min(data, na.rm = T)
+
+  if (is.null(digits)) {
+    digits <- if (all.equal(FUN, signif)) 1 else if (all.equal(FUN, round)) 0
+  }
+
+  distribution <- ecdf(data)
+  # pretty_breaks <- 0
+  discrepancies <- 100
+  while (any(abs(discrepancies) > threshold) & digits < 6) {
+    print(digits)
+    if (all.equal(FUN, signif) == TRUE) {
+      pretty_breaks <- FUN(breaks, digits = digits)
+      if(all(is.na(str_extract(tail(pretty_breaks, -1), "\\.[^0]*$")))) pretty_breaks[1] <- floor(pretty_breaks[1])
+    }
+    if (all.equal(FUN, round) == TRUE) {
+      pretty_breaks <- c(
+        floor(breaks[1] * 10^digits) / 10^digits,
+        FUN(tail(head(breaks, -1), -1), digits = digits),
+        ceiling(tail(breaks, 1) * 10^digits) / 10^digits)
+    }
+    if (method == "quantile") discrepancies <- distribution(pretty_breaks) - divisions
+    # if (method == "interval) discrepancies <- distribution(pretty_breaks) - distribution(breaks)
+    if (method == "interval") {
+      discrepancies <- (pretty_breaks - breaks)/ifelse(breaks != 0, breaks, pretty_breaks)
+      discrepancies[breaks == 0 & pretty_breaks == 0] <- 0
+    }
+
+    digits = digits + 1
+  }
+
+  return(pretty_breaks)
 }
