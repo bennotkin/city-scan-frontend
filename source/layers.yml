@@ -51,7 +51,6 @@ economic_change:
   center: 0
   bins: 0
 social_distancing:
-  fuzzy_string: ??
   title: Difficulty of Social Distancing
   palette: ['#ffffbf', '#de8250', '#a80000', '#82003b', '#4d0073']
   bins: 5
@@ -106,6 +105,7 @@ health_facilities:
   group_id: access-to-healthcare
 # SECTION 6 CLIMATE CONDITIONS
 solar:
+  fuzzy_string: solar
   title: 'Photovoltaic Potential'
   subtitle: Power potential of a theoretical 1 kWp PV system (kWh)
   bins: 3
@@ -120,6 +120,7 @@ air_quality:
   breaks: [0, 5, 10, 15, 20, 30, 40, 50, 100]
   group_id: air-quality
 summer_lst:
+  fuzzy_string: Summer_LST
   # palette: 'Spectral'
   palette: ['#5290C2', '#F0EE80', '#D33837']
   # domain: 'minmax'
