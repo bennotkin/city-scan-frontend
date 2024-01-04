@@ -37,7 +37,6 @@ country <- city_params$country
 layer_params <- read_yaml('source/layers.yml')
 ```
 
-
 ```{r}
 #| include: false
 # Visualization parameters (Am I using all of them?)
@@ -356,16 +355,25 @@ print_slide_text(slide_texts$built_form$land_cover)
 ```{r}
 #| include: false
 # NON-STANDARD: Need to combine three separate shapefiles
-# schools_800 <- fuzzy_read(spatial_dir, "schools_isochrones_800", FUN = vect)
-# schools_1600 <- fuzzy_read(spatial_dir, "schools_isochrones_1600", FUN = vect)
-# schools_2400 <- fuzzy_read(spatial_dir, "schools_isochrones_2400", FUN = vect)
+school_points <- fuzzy_read(spatial_dir, "schools$", FUN = vect) 
+schools_800 <- fuzzy_read(spatial_dir, "schools_800", FUN = vect)
+schools_1600 <- fuzzy_read(spatial_dir, "schools_1600", FUN = vect)
+schools_2400 <- fuzzy_read(spatial_dir, "schools_2400", FUN = vect)
 
-# # plot(c(schools_800, schools_1600, schools_2400))
+schools_1600_only <- erase(schools_1600, schools_800)
+schools_2400_only <- erase(schools_2400, schools_1600)
+school_zones <- Reduce(rbind, c(schools_800, schools_1600_only, schools_2400_only)) %>% select(-level_1, -nodez)
 
-# add_schools_layer <- create_layer_function(data = schools, yaml_key = "schools")
+# Interactive Plot (Leaflet)
+add_school_zones_layer <- create_layer_function(data = school_zones, yaml_key = "school_zones")
+add_school_points_layer <- create_layer_function(data = school_points, yaml_key = "school_points")
+all_maps <- add_school_zones_layer(all_maps) %>% add_school_points_layer()
+added_layers <- c(added_layers, "access-to-schools")
 
-# all_maps <- add_schools_layer(all_maps)
-# added_layers <- c(added_layers, "access-to-schools")
+# Static plot (PNG)
+plot_school <- plot_static(data = school_zones, yaml_key = "school_zones")
+plot_school <- plot_static(data = school_points, yaml_key = "school_points", baseplot = plot_school)
+save_plot(plot = plot_school, filename = "school.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -377,7 +385,24 @@ print_slide_text(slide_texts$built_form$schools)
 
 ```{r}
 #| include: false
-# Copy whatever was done for schools
+health_points <- fuzzy_read(spatial_dir, "health$", FUN = vect) 
+health_1000 <- fuzzy_read(spatial_dir, "health_1000", FUN = vect)
+health_2000 <- fuzzy_read(spatial_dir, "health_2000", FUN = vect)
+health_3000 <- fuzzy_read(spatial_dir, "health_3000", FUN = vect)
+
+health_zones <- Reduce(rbind, c(health_1000, health_2000, health_3000)) %>% select(-level_1, -nodez)
+
+# Interactive Plot (Leaflet)
+add_health_zones_layer <- create_layer_function(
+  data = health_zones, yaml_key = "health_zones")
+add_health_points_layer <- create_layer_function(data = health_points, yaml_key = "health_points")
+all_maps <- add_health_zones_layer(all_maps) %>% add_health_points_layer()
+added_layers <- c(added_layers, "access-to-healthcare")
+
+# Static plot (PNG)
+plot_health <- plot_static(data = health_zones, yaml_key = "health_zones")
+plot_health <- plot_static(data = health_points, yaml_key = "health_points", baseplot = plot_health)
+save_plot(plot = plot_health, filename = "health.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -491,7 +516,7 @@ all_maps <- add_forest_layer(all_maps)
 plot_forest <- plot_static(data = forest, yaml_key = "forest")
 save_plot(plot = plot_forest, filename = "forest.png", directory = styled_maps_dir)
 
-deforest <- fuzzy_read(spatial_dir, "LossYear", rast)
+deforest <- fuzzy_read(spatial_dir, "Deforest", rast)
 deforest[[1]] <- deforest[[1]] + 2000 # The file only shows the 1s and 10s column for the year
 deforest[[1]][deforest[[1]] == 2000] <- NA
 
@@ -607,6 +632,21 @@ save_plot(plot = plot_landslides, filename = "landslides.png", directory = style
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$risk_identification$landslides)
+```
+
+### Liquefaction
+
+```{r}
+liquefaction <- fuzzy_read(spatial_dir, "liquefaction", rast_as_vect)
+
+# Interactive Plot (Leaflet)
+add_liquefaction_layer <- create_layer_function(data = liquefaction, yaml_key = "liquefaction")
+all_maps <- add_liquefaction_layer(all_maps)
+added_layers <- c(added_layers, "liquefaction")
+
+# Static plot (PNG)
+plot_liquefaction <- plot_static(data = liquefaction, yaml_key = "liquefaction")
+save_plot(plot = plot_liquefaction, filename = "liquefaction.png", directory = styled_maps_dir)
 ```
 :::
 

@@ -168,6 +168,19 @@ create_layer_function <- function(data, yaml_key = NULL, params = NULL, color_sc
             group = params$group_id)
       } else if (class(data)[1] %in% c("SpatVector", "sf")) {
       # VECTOR
+        if ( # Add circle markers if geometry type is "points"
+          (class(data)[1] == "SpatVector" && geomtype(data) == "points") |
+          (class(data)[1] == "sf" && "POINTS" %in% st_geometry_type(data))) {
+          maps <- maps %>%
+            addCircles(
+              data = data,
+              color = params$palette,
+              weight = params$weight,
+              # opacity = 0.9,
+              group = params$group_id,
+              # label = ~ signif(pull(data[[1]]), 6)) # Needs to at least be 4 
+              label = labels)
+        } else { # Otherwise, draw the geometries
         maps <- maps %>%
           addPolygons(
             data = data,
@@ -181,6 +194,8 @@ create_layer_function <- function(data, yaml_key = NULL, params = NULL, color_sc
             group = params$group_id,
             # label = ~ signif(pull(data[[1]]), 6)) # Needs to at least be 4 
             label = labels)
+      }} else {
+        stop("Data is not spatRaster, RasterLayer, spatVector or sf")
       }
       # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
       maps <- maps %>%
@@ -228,7 +243,11 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
 
   layer <-
     if (class(data)[1] == "SpatVector") {
+      if (geomtype(data) == "points") {
+        geom_spatvector(data = data, color = palette, size = 1)
+      } else if (geomtype(data) == "polygons") {
       geom_spatvector(data = data, aes(fill = layer_values), color = params$stroke)
+      }
     } else if (class(data)[1] == "SpatRaster") {
       geom_spatraster(data = data)
     }

@@ -87,21 +87,41 @@ intersections:
   subtitle: Number of intersections per 1 km^2^
   palette: ['#ffffff', '#9F4830']
   group_id: intersection-density
-schools:
+school_zones:
   title: Travel distance to nearest school
   subtitle: Distance along road network in meters
-  palette: ['#2B4C29', '#C5D4C1', '#B6D053']
+  palette: ['#B6D053', '#B6D053AA', '#B6D05366']
   breaks: [800, 1600, 2400]
+  labels: ["<800 m", "800–1,600 m", "1,600–2,400 m"]
+  bins: 3
+  factor: TRUE
   # How do I indicate shading?
-  suffix: ' m'
+  # suffix: ' m'
   group_id: access-to-schools
-health_facilities:
+school_points:
+  title: School
+  palette: ['black']
+  alpha: 1
+  labels: ['School']
+  factor: TRUE
+  group_id: access-to-schools
+health_zones:
   title: Travel distance to nearest health facility
   subtitle: Distance along road network
-  palette: ['#2B4C29', '#C5D4C1', '#B6D053']
-  breaks: [1, 2, 3]
+  # palette: ['#2B4C29', '#C5D4C1', '#B6D053']
+  palette: ['#B6D053CC', '#B6D053AA', '#B6D05366']
+  breaks: [1000, 2000, 3000]
+  labels: ["<1 km", "1–2 km", "2–3 km"]
+  bins: 3
+  factor: TRUE
   # How do I indicate shading?
-  suffix: ' km'
+  group_id: access-to-healthcare
+health_points:
+  title: Health Facility
+  palette: ['black']
+  alpha: 1
+  labels: ['Health facility']
+  factor: TRUE
   group_id: access-to-healthcare
 # SECTION 6 CLIMATE CONDITIONS
 solar:
@@ -207,4 +227,12 @@ road_network_criticality:
   palette: ['#C5D1E9', '#8696C8', '#516BAE', '#9C2F76', '#CE3737']
   suffix: "%"
   group_id: road-network-criticality
+liquefaction:
+  fuzzy_string: landslides
+  title: Liquefaction susceptibility
+  factor: TRUE
+  palette: ['#FCEFE2', '#F2C08C', '#E89251', '#D66136', '#993F2B']
+  labels: ['Very low', 'Low', 'Medium', 'High', 'Very high']
+  breaks: [1, 2, 3, 4, 5]
+  group_id: liquefaction
 # SECTION 8 LOCAL INSTITUTIONS AND PLANNING
