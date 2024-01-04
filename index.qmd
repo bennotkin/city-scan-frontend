@@ -202,7 +202,7 @@ print_slide_text(slide_texts$demographics$population_density)
 #| include: false
 # Read RWI
 # (Necessary to include ["rwi"] because shapefile has multiple layers)
-rwi <- fuzzy_read(spatial_dir, "relative_wealth", FUN = vect)["rwi"]
+rwi <- fuzzy_read(spatial_dir, "rwi", FUN = vect)["rwi"]
 
 # Interactive Plot (Leaflet)
 add_rwi_layer <- create_layer_function(
@@ -280,7 +280,7 @@ print_slide_text(slide_texts$economic_activity$economic_change)
 ### Urban Extent and Change
 
 ```{r}
-wsf <- fuzzy_read(spatial_dir, "WSF.*4326", rast)
+wsf <- fuzzy_read(spatial_dir, "wsf.*4326.tif$", rast)
 values(wsf)[values(wsf) == 0] <- NA
 
 # Interactive Plot (Leaflet)
@@ -317,7 +317,7 @@ print_slide_text(slide_texts$built_form$builtup_density)
 ### Land Cover
 
 ```{r}
-land_cover <- fuzzy_read(spatial_dir, "landcover", rast)
+land_cover <- fuzzy_read(spatial_dir, "lc.tif", rast)
 
 # Interactive Plot (Leaflet)
 add_land_cover_layer <- create_layer_function(data = rast_as_vect(land_cover), yaml_key = "land_cover")
@@ -412,7 +412,7 @@ print_slide_text(slide_texts$climate_conditions$solar)
 
 ```{r}
 #| include: false
-air_quality <- fuzzy_read(spatial_dir, "air_quality", rast)
+air_quality <- fuzzy_read(spatial_dir, "air", rast)
 
 # Interactive Plot (Leaflet)
 add_air_quality_layer <- create_layer_function(data = air_quality, yaml_key = "air_quality")
@@ -433,7 +433,7 @@ print_slide_text(slide_texts$climate_conditions$air_quality)
 
 ```{r}
 #| include: false
-summer_lst <- fuzzy_read(spatial_dir, "Summer_LST", FUN = rast)
+summer_lst <- fuzzy_read(spatial_dir, "summer", FUN = rast)
 
 # Interactive Plot (Leaflet)
 summer_lst_resample <- summer_lst %>%
@@ -457,7 +457,7 @@ print_slide_text(slide_texts$climate_conditions$summer_lst)
 
 ```{r}
 #| include: false
-vegetation <- fuzzy_read(spatial_dir, "ndvi", rast)
+vegetation <- fuzzy_read(spatial_dir, "NDVI_Annual", rast)
 
 # Interactive Plot (Leaflet)
 vegetation_poly <- vegetation %>%
@@ -480,7 +480,7 @@ print_slide_text(slide_texts$climate_conditions$vegetation)
 # Forests & Deforestation
 ```{r}
 #| include: false
-forest <- fuzzy_read(spatial_dir, "CurrentForest", rast)
+forest <- fuzzy_read(spatial_dir, "ForestCover", rast)
 values(forest)[values(forest) == 0] <- NA
 
 # Interactive Plot (Leaflet)
@@ -592,7 +592,7 @@ print_slide_text(slide_texts$risk_identification$slope)
 
 ```{r}
 #| include: false
-landslides <- fuzzy_read(spatial_dir, "landslides", rast)
+landslides <- fuzzy_read(spatial_dir, "landslide", rast)
 
 # Interactive Plot (Leaflet)
 add_landslides_layer <- create_layer_function(data = rast_as_vect(landslides), yaml_key = "landslides")
