@@ -183,7 +183,7 @@ create_layer_function <- function(data, yaml_key = NULL, params = NULL, color_sc
             # group = params$title %>% str_replace_all("\\s", "-") %>% tolower(),
             group = params$group_id)
       } else if (class(data)[1] %in% c("SpatVector", "sf")) {
-      # VECTOR
+        # VECTOR
         if ( # Add circle markers if geometry type is "points"
           (class(data)[1] == "SpatVector" && geomtype(data) == "points") |
           (class(data)[1] == "sf" && "POINTS" %in% st_geometry_type(data))) {
@@ -197,41 +197,44 @@ create_layer_function <- function(data, yaml_key = NULL, params = NULL, color_sc
               # label = ~ signif(pull(data[[1]]), 6)) # Needs to at least be 4 
               label = labels)
         } else { # Otherwise, draw the geometries
-        maps <- maps %>%
-          addPolygons(
-            data = data,
-            fill = if(is.null(params$fill) || params$fill) T else F,
-            fillColor = ~color_scale(layer_values),
-            fillOpacity = 0.9,
-            stroke = if(!is.null(params$stroke) && !is.na(params$stroke) && params$stroke != F) T else F,
-            color = if(!is.null(params$stroke) && !is.na(params$stroke) && params$stroke == T) ~color_scale(layer_values) else params$stroke,
-            weight = params$weight,
-            opacity = 0.9,
-            group = params$group_id,
-            # label = ~ signif(pull(data[[1]]), 6)) # Needs to at least be 4 
-            label = labels)
+          maps <- maps %>%
+            addPolygons(
+              data = data,
+              fill = if(is.null(params$fill) || params$fill) T else F,
+              fillColor = ~color_scale(layer_values),
+              fillOpacity = 0.9,
+              stroke = if(!is.null(params$stroke) && !is.na(params$stroke) && params$stroke != F) T else F,
+              color = if(!is.null(params$stroke) && !is.na(params$stroke) && params$stroke == T) ~color_scale(layer_values) else params$stroke,
+              weight = params$weight,
+              opacity = 0.9,
+              group = params$group_id,
+              # label = ~ signif(pull(data[[1]]), 6)) # Needs to at least be 4 
+              label = labels)
       }} else {
         stop("Data is not spatRaster, RasterLayer, spatVector or sf")
       }
       # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
       legend_args <- list(
         map = maps,
-          # data = data,
-          position = 'bottomright',
-          values = domain,
+        # data = data,
+        position = 'bottomright',
+        values = domain,
+        # values = if (is.null(params$breaks)) domain else params$breaks,
+        # pal = if (is.null(params$labels) | is.null(params$breaks)) color_scale else NULL,
         pal = if (diff(lengths(list(params$labels, params$breaks))) == 1) NULL else color_scale,
+        # colors = if (is.null(params$labels) | is.null(params$breaks)) NULL else if (diff(lengths(list(params$labels, params$breaks))) == 1) color_scale(head(params$breaks, -1)) else color_scale(params$breaks),
         colors = if (diff(lengths(list(params$labels, params$breaks))) == 1) color_scale(head(params$breaks, -1)) else NULL,
-          opacity = legend_opacity,
-          # bins = params$bins,
-          # bins = 3,  # legend color ramp does not render if there are too many bins
+        opacity = legend_opacity,
+        # bins = params$bins,
+        # bins = 3,  # legend color ramp does not render if there are too many bins
         labels = params$labels,
-          title = params$title,
+        title = params$title,
         # labFormat = params$labFormat,
-          # labFormat = labelFormat(transform = function(x) label_maker(x = x, levels = params$breaks, labels = params$labels)),
-          # labFormat = function(type, breaks, labels) {
-          # }
-          # group = params$title %>% str_replace_all("\\s", "-") %>% tolower())
-          group = params$group_id)
+        # labFormat = labelFormat(transform = function(x) label_maker(x = x, levels = params$breaks, labels = params$labels)),
+        # labFormat = function(type, breaks, labels) {
+        # }
+        # group = params$title %>% str_replace_all("\\s", "-") %>% tolower())
+        group = params$group_id)
       legend_args <- Filter(Negate(is.null), legend_args)
       # Using do.call so I can conditionally include args (i.e., pal and colors)
       maps <- do.call(addLegend, legend_args)
@@ -263,7 +266,7 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
       if (geomtype(data) == "points") {
         geom_spatvector(data = data, color = palette, size = 1)
       } else if (geomtype(data) == "polygons") {
-      geom_spatvector(data = data, aes(fill = layer_values), color = params$stroke)
+        geom_spatvector(data = data, aes(fill = layer_values), color = params$stroke)
       }
     } else if (class(data)[1] == "SpatRaster") {
       geom_spatraster(data = data)
@@ -279,32 +282,36 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
                 method = params$breaks_method %>% {if(is.null(.)) "quantile" else .})
   }
 
-  fill_scale <-
-    if (!is.null(params$factor) && params$factor) {
-      scale_fill_manual(values = palette, na.value = "transparent", name = title)
-    } else if (params$bins == 0) {
-        scale_fill_gradientn(
-          colors = palette,
-          rescaler = if (!is.null(params$center)) ~ scales::rescale_mid(.x, mid = params$center) else scales::rescale,
-          na.value = "transparent",
-          name = title)
-      # }
+  # geometry_type <- c(tryCatch(st_geometry_type(data), error = \(e) NULL), tryCatch(geomtype(data),  error = \(e) NULL))
+  # if (str_detect(tolower(geometry_type), "point")) {
+    # fill_scale <- NULL
+    # } else {
+      fill_scale <-
+        if (!is.null(params$factor) && params$factor) {
+          scale_fill_manual(values = palette, na.value = "transparent", name = title)
+        } else if (params$bins == 0) {
+            scale_fill_gradientn(
+              colors = palette,
+              rescaler = if (!is.null(params$center)) ~ scales::rescale_mid(.x, mid = params$center) else scales::rescale,
+              na.value = "transparent",
+              name = title)
+          # }
         } else if (params$bins > 0) {
-        scale_fill_stepsn(
-          colors = palette,
+            scale_fill_stepsn(
+              colors = palette,
               # Length of labels is one less than breaks when we want a discrete legend
               breaks = if (is.null(params$breaks)) waiver() else if (diff(lengths(list(params$labels, params$breaks))) == 1) params$breaks[-1] else params$breaks,
               values = if (is.null(params$breaks)) NULL else breaks_midpoints(params$breaks),
               labels = if (is.null(params$labels)) waiver() else params$labels,
               limits = if (is.null(params$breaks)) NULL else range(params$breaks),
-          rescaler = if (!is.null(params$center)) ~ scales::rescale_mid(.x, mid = params$center) else scales::rescale,
-          na.value = "transparent",
-          oob = scales::oob_squish,
+              rescaler = if (!is.null(params$center)) ~ scales::rescale_mid(.x, mid = params$center) else scales::rescale,
+              na.value = "transparent",
+              oob = scales::oob_squish,
               name = title,
               guide = if (diff(lengths(list(params$labels, params$breaks))) == 1) "legend" else guide_colorsteps()
-          )
+              )
     # }
-  }
+  } 
 
   legend_text_alignment <- if (
       !is.null(params$labels) && is.character(params$labels)
@@ -321,6 +328,10 @@ plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, ...) {
   params <- prepare_parameters(yaml_key = yaml_key, ...)
   layer <- create_static_layer(data, params = params)
   baseplot <- if (is.null(baseplot)) ggplot() + tiles else baseplot + ggnewscale::new_scale_fill()
+  # This commented  method sets the plot CRS to 4326, but this requires reprojecting the tiles
+  # baseplot <- if (is.null(baseplot)) {
+  #   ggplot() + geom_sf(data = static_map_bounds, fill = NA, color = NA) + tiles
+  # } else { baseplot + ggnewscale::new_scale_fill() }
   p <- baseplot +
         layer + 
         geom_sf(data = static_map_bounds, fill = NA, color = NA) +
