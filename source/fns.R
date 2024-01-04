@@ -98,6 +98,7 @@ prepare_parameters <- function(yaml_key, ...) {
   # Override the layers.yaml parameters with arguments provided to ...
   # Parameters include bins, breaks, center, color_scale, domain, labFormat, and palette
   layer_params <- read_yaml('source/layers.yml')
+  if (yaml_key %ni% names(layer_params)) stop(paste(yaml_key, "is not a key in source/layers.yml"))
   yaml_params <- layer_params[[yaml_key]]
   new_params <- list(...)
   kept_params <- yaml_params[!names(yaml_params) %in% names(new_params)]
@@ -108,11 +109,26 @@ prepare_parameters <- function(yaml_key, ...) {
     params$bins <- if(is.null(params$breaks)) 0 else length(params$breaks)
     # params$bins <- if(is.null(params$breaks)) 0 else NULL
   }
-  if (is.null(params$labFormat)) params$labFormat <- labelFormat()
+  # if (is.null(params$labFormat)) params$labFormat <- labelFormat()
   if (is.null(params$stroke)) params$stroke <- NA
   # if (!is.null(params$factor) && params$factor) {
   #   params$labFormat <- function(type, levels) {return(params$labels)}
   # }
+
+  # Apply layer transparency to palette
+  params$palette <- sapply(params$palette, \(p) {
+    # If palette has no alpha, add
+    if (nchar(p) == 7 | substr(p, 1, 1) != "#") return(alpha(p, layer_alpha))
+    # If palette already has alpha, multiply
+    if (nchar(p) == 9) {
+      alpha_hex <- as.hexmode(substr(p, 8, 9))
+      new_alpha_hex <- as.character(alpha_hex * layer_alpha)
+      if (nchar(new_alpha_hex) == 1) new_alpha_hex <- paste0(0, new_alpha_hex)
+      new_p <- paste0(substr(p, 1, 7), new_alpha_hex)
+      return(new_p)
+    }
+    warning(paste("Palette value", p, "is not of length 6 or 8"))
+  }, USE.NAMES = F)
 
   return(params)
 }
@@ -198,24 +214,27 @@ create_layer_function <- function(data, yaml_key = NULL, params = NULL, color_sc
         stop("Data is not spatRaster, RasterLayer, spatVector or sf")
       }
       # See here for formatting the legend: https://stackoverflow.com/a/35803245/5009249
-      maps <- maps %>%
-        addLegend(
+      legend_args <- list(
+        map = maps,
           # data = data,
           position = 'bottomright',
-          pal = color_scale,
-          # colors = palette,
           values = domain,
+        pal = if (diff(lengths(list(params$labels, params$breaks))) == 1) NULL else color_scale,
+        colors = if (diff(lengths(list(params$labels, params$breaks))) == 1) color_scale(head(params$breaks, -1)) else NULL,
           opacity = legend_opacity,
           # bins = params$bins,
           # bins = 3,  # legend color ramp does not render if there are too many bins
-          # labels = params_labels,
+        labels = params$labels,
           title = params$title,
-          labFormat = params$labFormat,
+        # labFormat = params$labFormat,
           # labFormat = labelFormat(transform = function(x) label_maker(x = x, levels = params$breaks, labels = params$labels)),
           # labFormat = function(type, breaks, labels) {
           # }
           # group = params$title %>% str_replace_all("\\s", "-") %>% tolower())
           group = params$group_id)
+      legend_args <- Filter(Negate(is.null), legend_args)
+      # Using do.call so I can conditionally include args (i.e., pal and colors)
+      maps <- do.call(addLegend, legend_args)
       # if (!show) maps <- hideGroup(maps, group = layer_id)
       return(maps)
   }
@@ -227,7 +246,6 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
   if (is.null(params)) {
     params <- prepare_parameters(yaml_key, ...)
   }
-  layer_values <- get_layer_values(data)
   if (!is.null(params$factor) && params$factor) {
     data <- 
       set_layer_values(
@@ -237,9 +255,8 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
                         labels = params$labels))
     params$palette <- setNames(params$palette, params$labels)
   }
-  # Set palette transparency (but don't make transparent colors less transparent)
-  palette <- alpha(params$palette, layer_alpha)
-  palette[params$palette %in% c("transparent", "#FFFF", "#FFFFFFFF")] <- "transparent"
+  layer_values <- get_layer_values(data)
+  palette <- params$palette
 
   layer <-
     if (class(data)[1] == "SpatVector") {
@@ -264,7 +281,6 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
 
   fill_scale <-
     if (!is.null(params$factor) && params$factor) {
-      print("Factor")
       scale_fill_manual(values = palette, na.value = "transparent", name = title)
     } else if (params$bins == 0) {
         scale_fill_gradientn(
@@ -273,19 +289,21 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
           na.value = "transparent",
           name = title)
       # }
-    } else {
-    if (params$bins > 0) {
+        } else if (params$bins > 0) {
         scale_fill_stepsn(
           colors = palette,
-          breaks = if (is.null(params$breaks)) waiver() else params$breaks,
-          values = if (is.null(params$breaks)) NULL else scales::rescale(params$breaks),
-          limits = if (is.null(params$breaks)) NULL else c(min(params$breaks), max(params$breaks)),
+              # Length of labels is one less than breaks when we want a discrete legend
+              breaks = if (is.null(params$breaks)) waiver() else if (diff(lengths(list(params$labels, params$breaks))) == 1) params$breaks[-1] else params$breaks,
+              values = if (is.null(params$breaks)) NULL else breaks_midpoints(params$breaks),
+              labels = if (is.null(params$labels)) waiver() else params$labels,
+              limits = if (is.null(params$breaks)) NULL else range(params$breaks),
           rescaler = if (!is.null(params$center)) ~ scales::rescale_mid(.x, mid = params$center) else scales::rescale,
           na.value = "transparent",
           oob = scales::oob_squish,
-          name = title
+              name = title,
+              guide = if (diff(lengths(list(params$labels, params$breaks))) == 1) "legend" else guide_colorsteps()
           )
-    }
+    # }
   }
 
   legend_text_alignment <- if (
@@ -380,31 +398,31 @@ set_domain <- function(values, domain = NULL, center = NULL, factor = NULL) {
 }
 
 create_color_scale <- function(domain, palette, center = NULL, bins = 5, reverse = F, breaks = NULL, factor = NULL, levels = NULL) {
+  # List of shared arguments
+  args <- list(
+    palette = palette,
+    domain = domain,
+    na.color = 'transparent',
+    alpha = T)
   # if (!is.null(breaks)) bins <- length(breaks)
   if (!is.null(factor) && factor) {
-      color_scale <- colorFactor(
-        palette = palette,
-        domain = domain,
+      color_scale <- rlang::inject(colorFactor(
+        !!!args,
         levels = levels,
-        na.color = 'transparent',
-        ordered = TRUE
-      )
+        ordered = TRUE))
   } else if (bins == 0) {
-    color_scale <- colorNumeric(
+    color_scale <- rlang::inject(colorNumeric(
       # Why did I find it necessary to use colorRamp previously? For setting "linear"?
       # palette = colorRamp(palette, interpolate = "linear"),
-      palette = palette,
-      domain = domain,
-      na.color = 'transparent',
-      reverse = reverse) 
+      !!!args,
+      reverse = reverse)) 
   } else {
-    color_scale <- colorBin(
-      palette = palette,
-      domain = domain,
+    color_scale <- rlang::inject(colorBin(
+      !!!args,
       bins = if (!is.null(breaks)) breaks else bins,
       # Might want to turn pretty back on
       pretty = FALSE,
-      na.color = 'transparent', reverse = reverse)         
+      reverse = reverse))       
   }
   return(color_scale)
 }
@@ -431,6 +449,13 @@ mapshot_styled <- function(map_dynamic, file_suffix, return) {
           file = paste0(styled_maps_dir, city_string, '-', file_suffix, '.png'),
           vheight = vheight, vwidth = vwidth, useragent = useragent)
   # return(map_static)
+}
+
+breaks_midpoints <- \(breaks) {
+  scaled_breaks <- scales::rescale(breaks)
+  midpoints <- head(scaled_breaks, -1) + diff(scaled_breaks)/2
+  midpoints[length(midpoints)] <- midpoints[length(midpoints)] + .Machine$double.eps
+  return(midpoints)
 }
 
 # Text Functions ----
