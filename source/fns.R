@@ -151,6 +151,12 @@ create_layer_function <- function(data, yaml_key = NULL, params = NULL, color_sc
 
   # data <- fuzzy_read(spatial_dir, params$fuzzy_string)
   layer_values <- get_layer_values(data)
+  if(params$bins > 0 && is.null(params$breaks)) {
+    params$breaks <- break_pretty2(
+                data = layer_values, n = params$bins + 1, FUN = signif,
+                method = params$breaks_method %>% {if(is.null(.)) "quantile" else .})
+  }
+
   labels <- label_maker(x = layer_values,
                         levels = params$breaks,
                         labels = params$labels,
@@ -443,6 +449,9 @@ label_maker <- function(x, levels = NULL, labels = NULL, suffix = NULL) {
   #   index <- sapply(x, \(.x) which(levels == .x)) # Using R's new lambda functions!
   #   x <- labels[index]
   # }
+  if (is.numeric(x)) {
+    x <- signif(x, 6)
+  }
   if (!is.null(suffix)) {
     x <- paste0(x, suffix)
   }
