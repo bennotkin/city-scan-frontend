@@ -504,7 +504,7 @@ save_plot(plot = plot_vegetation, filename = "vegetation.png", directory = style
 print_slide_text(slide_texts$climate_conditions$vegetation)
 ```
 
-# Forests & Deforestation
+### Forests & Deforestation
 ```{r}
 #| include: false
 forest <- fuzzy_read(spatial_dir, "ForestCover", rast)
@@ -650,6 +650,71 @@ added_layers <- c(added_layers, "liquefaction")
 plot_liquefaction <- plot_static(data = liquefaction, yaml_key = "liquefaction")
 save_plot(plot = plot_liquefaction, filename = "liquefaction.png", directory = styled_maps_dir)
 ```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$liquefaction)
+```
+
+### Burnable Area
+
+```{r}
+burnable <- fuzzy_read(spatial_dir, "burn", rast_as_vect)
+
+# Interactive Plot (Leaflet)
+add_burnable_layer <- create_layer_function(data = burnable, yaml_key = "burnable")
+all_maps <- add_burnable_layer(all_maps)
+added_layers <- c(added_layers, "burnable-area")
+
+# Static plot (PNG)
+plot_burnable <- plot_static(data = burnable, yaml_key = "burnable")
+save_plot(plot = plot_burnable, filename = "burnable.png", directory = styled_maps_dir)
+```
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$burnable)
+```
+
+### Moisture
+```{r}
+moisture <- fuzzy_read(spatial_dir, "NDMI_Annual", rast)
+
+# Interactive Plot (Leaflet)
+moisture_poly <- moisture %>%
+  aggregate(fact = 10, fun = "mean") %>%
+  as.polygons(digits = 2, aggregate = T) # Is this larger with/without aggregate?
+add_moisture_layer <- create_layer_function(data = moisture_poly, yaml_key = "moisture")
+all_maps <- add_moisture_layer(all_maps)
+added_layers <- c(added_layers, "moisture")
+
+# Static plot (PNG)
+plot_moisture <- plot_static(data = moisture_poly, yaml_key = "moisture")
+save_plot(plot = plot_moisture, filename = "moisture.png", directory = styled_maps_dir)
+```
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$moisture)
+```
+
+### Fire Potential
+```{r}
+fwi <- fuzzy_read(spatial_dir, "fwi", rast)
+
+# Interactive Plot (Leaflet)
+add_fwi_layer <- create_layer_function(data = fwi, yaml_key = "fwi")
+all_maps <- add_fwi_layer(all_maps)
+added_layers <- c(added_layers, "fire-potential")
+
+# Static plot (PNG)
+# Commenting out because of large size (Need to change tile zoom level and static bounds)
+# plot_fwi <- plot_static(data = fwi, yaml_key = "fwi")
+# save_plot(plot = plot_fwi, filename = "fwi.png", directory = styled_maps_dir)
+```
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$fwi)
+```
+
 :::
 
 ::: maps

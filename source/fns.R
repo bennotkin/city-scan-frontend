@@ -307,7 +307,7 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
               colors = palette,
               # Length of labels is one less than breaks when we want a discrete legend
               breaks = if (is.null(params$breaks)) waiver() else if (diff(lengths(list(params$labels, params$breaks))) == 1) params$breaks[-1] else params$breaks,
-              values = if (is.null(params$breaks)) NULL else breaks_midpoints(params$breaks),
+              values = if (is.null(params$breaks)) NULL else breaks_midpoints(params$breaks, rescaler = if (!is.null(params$center)) scales::rescale_mid else scales::rescale, mid = params$center),
               labels = if (is.null(params$labels)) waiver() else params$labels,
               limits = if (is.null(params$breaks)) NULL else range(params$breaks),
               rescaler = if (!is.null(params$center)) ~ scales::rescale_mid(.x, mid = params$center) else scales::rescale,
@@ -471,8 +471,8 @@ mapshot_styled <- function(map_dynamic, file_suffix, return) {
   # return(map_static)
 }
 
-breaks_midpoints <- \(breaks) {
-  scaled_breaks <- scales::rescale(breaks)
+breaks_midpoints <- \(breaks, rescaler = scales::rescale, ...) {
+  scaled_breaks <- rescaler(breaks, ...)
   midpoints <- head(scaled_breaks, -1) + diff(scaled_breaks)/2
   midpoints[length(midpoints)] <- midpoints[length(midpoints)] + .Machine$double.eps
   return(midpoints)
