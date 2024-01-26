@@ -502,7 +502,7 @@ read_md <- function(file) {
         while (tail(df$text, 1) == "" & nrow(df) > 1) df <- head(df, -1)
         return(df)
     }, df = .) } %>%
-    bind_rows() %>%
+    bind_rows() #%>%
     # Do I want to remove header lines? For now, no
     # filter(!str_detect(text, "^#"))
   text_list <- sapply(unique(mddf$section), function(sect) {
@@ -620,7 +620,6 @@ break_pretty2 <- function(data, n = 6, method = "quantile", FUN = signif, digits
   # pretty_breaks <- 0
   discrepancies <- 100
   while (any(abs(discrepancies) > threshold) & digits < 6) {
-    print(digits)
     if (all.equal(FUN, signif) == TRUE) {
       pretty_breaks <- FUN(breaks, digits = digits)
       if(all(is.na(str_extract(tail(pretty_breaks, -1), "\\.[^0]*$")))) pretty_breaks[1] <- floor(pretty_breaks[1])
