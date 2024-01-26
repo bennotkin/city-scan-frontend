@@ -333,15 +333,20 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
 plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, ...) {
   params <- prepare_parameters(yaml_key = yaml_key, ...)
   layer <- create_static_layer(data, params = params)
-  baseplot <- if (is.null(baseplot)) ggplot() + tiles else baseplot + ggnewscale::new_scale_fill()
-  # This commented  method sets the plot CRS to 4326, but this requires reprojecting the tiles
-  # baseplot <- if (is.null(baseplot)) {
-  #   ggplot() + geom_sf(data = static_map_bounds, fill = NA, color = NA) + tiles
-  # } else { baseplot + ggnewscale::new_scale_fill() }
-  p <- baseplot +
-        layer + 
+  # baseplot <- if (is.null(baseplot)) ggplot() + tiles else baseplot + ggnewscale::new_scale_fill()
+  # This  method sets the plot CRS to 4326, but this requires reprojecting the tiles
+  baseplot <- if (is.null(baseplot)) {
+    ggplot() +
         geom_sf(data = static_map_bounds, fill = NA, color = NA) +
         coord_sf(expand = F) +
+      tiles 
+  } else { baseplot + ggnewscale::new_scale_fill() }
+  p <- baseplot +
+        layer + 
+        coord_sf(
+          expand = F,
+          xlim = st_bbox(static_map_bounds)[c(1,3)],
+          ylim = st_bbox(static_map_bounds)[c(2,4)]) +
         annotation_north_arrow(style = north_arrow_minimal, location = "br", height = unit(1, "cm")) +
         annotation_scale(style = "ticks", aes(unit_category = "metric", width_hint = 0.33), height = unit(0.25, "cm")) +        
         theme(
