@@ -484,18 +484,22 @@ read_md <- function(file) {
   instruction_lines <- 1:grep("CITY CONTENT BEGINS HERE", md)
   mddf <- tibble(text = md[-instruction_lines]) %>%
     mutate(
-      # Should maybe use a different header symbol than hashes so that the content itself can use hash
-      # section = case_when(str_detect(text, "^## ") ~ text, T ~ NA_character_),
-      # slide = case_when(str_detect(text, "^### ") ~ text, T ~ NA_character_),
       section = case_when(str_detect(text, "^//// ") ~ str_extract(text, "^/+ (.*)$", group = T), T ~ NA_character_),
       slide = case_when(str_detect(text, "^// ") ~ str_extract(text, "^/+ (.*)$", group = T), T ~ NA_character_),
-      .before = 1
-    ) %>% tidyr::fill(section, slide) %>%
-    filter(!str_detect(text, "^/") & !str_detect(text, "^----")) %>%
-    # Do I want to remove header lines? For now, yes
-    filter(!str_detect(text, "^#")) %>%
-    # filter(!str_detect(text, "^\\s*$")) %>%
-    filter(!is.na(slide))
+      .before = 1) %>%
+    tidyr::fill(section) %>% 
+    { lapply(na.omit(unique(.$section)), \(sect, df) {
+        df <- filter(df, section == sect) %>%
+          tidyr::fill(slide, .direction = "down") %>%
+          filter(!(slide != lead(slide) & text == "")) %>%
+          filter(!str_detect(text, "^/") & !str_detect(text, "^----"))
+        while (df$text[1] == "" & nrow(df) > 1) df <- df[-1,]
+        while (tail(df$text, 1) == "" & nrow(df) > 1) df <- head(df, -1)
+        return(df)
+    }, df = .) } %>%
+    bind_rows() %>%
+    # Do I want to remove header lines? For now, no
+    # filter(!str_detect(text, "^#"))
   text_list <- sapply(unique(mddf$section), function(sect) {
     section_df <- filter(mddf, section == sect)
     section_list <- sapply(c(unique(section_df$slide)), function(s) {

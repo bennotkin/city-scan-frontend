@@ -223,12 +223,6 @@ landslides:
   labels: ['Very low', 'Low', 'Medium', 'High', 'Very high']
   breaks: [0, 1, 2, 3, 4]
   group_id: landslides
-road_network_criticality:
-  title: Road network segment criticality
-  subtitle: 'Criticality %'
-  palette: ['#C5D1E9', '#8696C8', '#516BAE', '#9C2F76', '#CE3737']
-  suffix: "%"
-  group_id: road-network-criticality
 liquefaction:
   fuzzy_string: landslides
   title: Liquefaction susceptibility
@@ -237,4 +231,29 @@ liquefaction:
   labels: ['Very low', 'Low', 'Medium', 'High', 'Very high']
   breaks: [1, 2, 3, 4, 5]
   group_id: liquefaction
+road_network_criticality:
+  title: Road network segment criticality
+  subtitle: 'Criticality %'
+  palette: ['#C5D1E9', '#8696C8', '#516BAE', '#9C2F76', '#CE3737']
+  suffix: "%"
+  group_id: road-network-criticality
+burnable:
+  fuzzy_string: burnable
+  title: Burnable Area
+  palette: ['#FFFFFF', '#5C1316']
+  breaks: [0, .2, .4, .6, .8, 1]
+  group_id: burnable-area
+moisture:
+  fuzzy_string: NDMI_Annual
+  title: NDMI
+  palette: ['#D45A35', '#F6F7F9', '#48A787']
+  center: 0
+  bins: 5
+  group_id: moisture
+fwi:
+  fuzzy_string: fwi
+  title: NDMI
+  palette: ['#EEEA55', '#992C29']
+  bins: 5
+  group_id: fire-potential
 # SECTION 8 LOCAL INSTITUTIONS AND PLANNING

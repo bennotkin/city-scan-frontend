@@ -19,15 +19,15 @@ execute:
 source("source/fns.R")
 source("source/helpers.R")
 
-city_dir <- paste_path("mnt/", readLines("city-dir.txt"))
-user_input_dir <- paste_path(city_dir, "01-user-input/")
-process_output_dir <- paste_path(city_dir, "02-process-output/")
-spatial_dir <- paste_path(process_output_dir, "spatial/")
-output_dir <- paste_path(city_dir, "03-render-output/")
+city_dir <- file.path("mnt/", readLines("city-dir.txt"))
+user_input_dir <- file.path(city_dir, "01-user-input/")
+process_output_dir <- file.path(city_dir, "02-process-output/")
+spatial_dir <- file.path(process_output_dir, "spatial/")
+output_dir <- file.path(city_dir, "03-render-output/")
 styled_maps_dir <- "generated/styled-maps/"
 
 # City parameters
-city_params <- read_yaml(paste_path(user_input_dir, "city_inputs.yml"))
+city_params <- read_yaml(file.path(user_input_dir, "city_inputs.yml"))
 # cities <- list.files("cities")
 city <- city_params$city_name
 city_string <- tolower(city) %>% stringr::str_replace_all(" ", "-")
@@ -62,7 +62,7 @@ title: "`r paste(city, country, sep = ', ')`, City Scan"
 
 ```{r}
 # Get text
-city_text <- read_md(paste0(user_input_dir, "text-files/manual-text.md"))
+city_text <- read_md(file.path(user_input_dir, "text-files/manual-text.md"))
 generic_text <- read_yaml("source/generic-text.yml")
 slide_texts <- merge_lists(city_text, generic_text)
 ```
@@ -110,6 +110,12 @@ paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("
 ::: text-column
 # {{< meta title >}}
 
+## Executive Summary
+```{r}
+#| output: asis
+print_slide_text(slide_texts$executive_summary$executive_summary)
+```
+
 ## Setting the Context
 
 ### Basic City Information
@@ -123,12 +129,11 @@ paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("
 print_slide_text(slide_texts$setting_the_context$basic_city_info)
 ```
 
-<!-- ### The State of Urban Infrastructure and Service Delivery -->
-
-<!-- ```{r} -->
-<!-- #| output: asis -->
-<!-- print_slide_text(slide_texts$setting_the_context$infrastructure_and_service_delivery) -->
-<!-- ``` -->
+### The State of Urban Infrastructure and Service Delivery
+```{r}
+#| output: asis
+print_slide_text(slide_texts$setting_the_context$infrastructure_and_service_delivery)
+```
 
 ## Population and Demographic Trends
 
@@ -639,7 +644,8 @@ print_slide_text(slide_texts$risk_identification$landslides)
 ### Liquefaction
 
 ```{r}
-liquefaction <- fuzzy_read(spatial_dir, "liquefaction", rast_as_vect)
+#| include: false
+liquefaction <- fuzzy_read(spatial_dir, "liquefaction.tif$", rast_as_vect)
 
 # Interactive Plot (Leaflet)
 add_liquefaction_layer <- create_layer_function(data = liquefaction, yaml_key = "liquefaction")
@@ -659,6 +665,7 @@ print_slide_text(slide_texts$risk_identification$liquefaction)
 ### Burnable Area
 
 ```{r}
+#| include: false
 burnable <- fuzzy_read(spatial_dir, "burn", rast_as_vect)
 
 # Interactive Plot (Leaflet)
@@ -677,6 +684,7 @@ print_slide_text(slide_texts$risk_identification$burnable)
 
 ### Moisture
 ```{r}
+#| include: false
 moisture <- fuzzy_read(spatial_dir, "NDMI_Annual", rast)
 
 # Interactive Plot (Leaflet)
@@ -696,8 +704,29 @@ save_plot(plot = plot_moisture, filename = "moisture.png", directory = styled_ma
 print_slide_text(slide_texts$risk_identification$moisture)
 ```
 
+### Historical Burnt Area
+```{r}
+#| include: false
+# burnt_area <- fuzzy_read(spatial_dir, "???", rast_as_vect)
+# 
+# # Interactive Plot (Leaflet)
+# add_burnt_area_layer <- create_layer_function(data = burnt_area, yaml_key = "burnt_area")
+# all_maps <- add_burnt_area_layer(all_maps)
+# added_layers <- c(added_layers, "burnt_area")
+# 
+# # Static plot (PNG)
+# plot_burnt_area <- plot_static(data = burnt_area, yaml_key = "burnt_area")
+# save_plot(plot = plot_burnt_area, filename = "burnt_area.png", directory = styled_maps_dir)
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$burnt_area)
+```
+
 ### Fire Potential
 ```{r}
+#| include: false
 fwi <- fuzzy_read(spatial_dir, "fwi", rast)
 
 # Interactive Plot (Leaflet)
@@ -710,11 +739,11 @@ added_layers <- c(added_layers, "fire-potential")
 # plot_fwi <- plot_static(data = fwi, yaml_key = "fwi")
 # save_plot(plot = plot_fwi, filename = "fwi.png", directory = styled_maps_dir)
 ```
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$risk_identification$fwi)
 ```
-
 :::
 
 ::: maps

@@ -58,6 +58,7 @@ $topbar-height: 2rem;
   // Prevent map from scrolling up too much & ensuring all sections hit scrollama offset point
   section {
     min-height: 50vh;
+    section.level4 {min-height: 0vh; padding-bottom: 1rem;}
     // This is probably an overly complicated way to ensure each slide is vertically centered
     display: flex;
     flex-direction: column;
@@ -68,7 +69,7 @@ $topbar-height: 2rem;
     padding-bottom: 3rem;
   }
 
-  >section::last-child {
+  > section:last-child {
     margin-bottom: 100vh;
   }
 
@@ -81,7 +82,8 @@ $topbar-height: 2rem;
 .text-column {
   // Text is grey when not in focus, black when in focus
   color: darkgrey;
-  section.is-active {color: black;}
+  section.is-active {color: black;};
+  section#executive-summary {color: black;};
 
 h1 {
     font-size: 3rem;
@@ -117,6 +119,8 @@ h1 {
     font-size: 1.1rem;
     border-bottom: 1px solid black;
   }
+
+  h4 {font-size: 1.1rem;}
 
   p { font-size: 1rem; }
 
