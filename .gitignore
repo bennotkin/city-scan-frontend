@@ -18,3 +18,5 @@ gce-test
 styled-maps
 .vscode
 rosm.cache/
+.Rproj.user
+index_cache
