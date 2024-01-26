@@ -18,15 +18,15 @@ execute:
 source("source/fns.R")
 source("source/helpers.R")
 
-city_dir <- paste_path("mnt/", readLines("city-dir.txt"))
-user_input_dir <- paste_path(city_dir, "01-user-input/")
-process_output_dir <- paste_path(city_dir, "02-process-output/")
-spatial_dir <- paste_path(process_output_dir, "spatial/")
-output_dir <- paste_path(city_dir, "03-render-output/")
+city_dir <- file.path("mnt/", readLines("city-dir.txt"))
+user_input_dir <- file.path(city_dir, "01-user-input/")
+process_output_dir <- file.path(city_dir, "02-process-output/")
+spatial_dir <- file.path(process_output_dir, "spatial/")
+output_dir <- file.path(city_dir, "03-render-output/")
 styled_maps_dir <- "generated/styled-maps/"
 
 # City parameters
-city_params <- read_yaml(paste_path(user_input_dir, "city_inputs.yml"))
+city_params <- read_yaml(file.path(user_input_dir, "city_inputs.yml"))
 # cities <- list.files("cities")
 city <- city_params$city_name
 city_string <- tolower(city) %>% stringr::str_replace_all(" ", "-")
@@ -36,14 +36,20 @@ country <- city_params$country
 layer_params <- read_yaml('source/layers.yml')
 ```
 
-
 ```{r}
 #| include: false
 # Visualization parameters (Am I using all of them?)
+# Interactivve Plots (Leaflet)
 basemap_opacity <- 0.3
 legend_opacity <- 0.8
 vwidth <- 900
 vheight <- vwidth
+
+# Static map
+layer_alpha <- 0.8
+map_width <- 6.9
+map_height <- 5.9
+aspect_ratio <- map_width / map_height
 
 # this is to enable fractional zoom in mapshot
 useragent <- 'Mozilla/5.0 (compatible; MSIE 10.6; Windows NT 6.1; Trident/5.0; InfoPath.2; SLCC1; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; .NET CLR 2.0.50727) 3gpp-gba UNTRUSTED/1.0'
@@ -55,7 +61,7 @@ title: "`r paste(city, country, sep = ', ')`, City Scan"
 
 ```{r}
 # Get text
-city_text <- read_md(paste0(user_input_dir, "text-files/manual-text.md"))
+city_text <- read_md(file.path(user_input_dir, "text-files/manual-text.md"))
 generic_text <- read_yaml("source/generic-text.yml")
 slide_texts <- merge_lists(city_text, generic_text)
 ```
@@ -64,11 +70,16 @@ slide_texts <- merge_lists(city_text, generic_text)
 #| include: false
 
 # Define the AOI
-aoi <- st_read(paste_path(user_input_dir, "AOI"))
+aoi <- st_zm(st_read(file.path(user_input_dir, "AOI")))
 aoi_bounds <- st_bbox(aoi)
+static_map_bounds <- aspect_buffer(aoi, aspect_ratio, buffer_percent = 0.05)
 
 # Inititate the map here, will build on it in each "slide"
 basemap <- plot_basemap("vector")
+
+## Static:
+zoom <- round(14.6 + -0.00015 * units::drop_units(sqrt(st_area(aoi))))
+tiles <- annotation_map_tile(type = "cartolight", zoom = zoom)
 
 # Keep track of added layers
 added_layers <- c()
@@ -98,6 +109,12 @@ paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("
 ::: text-column
 # {{< meta title >}}
 
+## Executive Summary
+```{r}
+#| output: asis
+print_slide_text(slide_texts$executive_summary$executive_summary)
+```
+
 ## Setting the Context
 
 ### Basic City Information
@@ -111,12 +128,11 @@ paste0(str_replace(sections, "(^\\s*- )(.+$)", "\\1[\\2]"), anchors) %>% { cat("
 print_slide_text(slide_texts$setting_the_context$basic_city_info)
 ```
 
-<!-- ### The State of Urban Infrastructure and Service Delivery -->
-
-<!-- ```{r} -->
-<!-- #| output: asis -->
-<!-- print_slide_text(slide_texts$setting_the_context$infrastructure_and_service_delivery) -->
-<!-- ``` -->
+### The State of Urban Infrastructure and Service Delivery
+```{r}
+#| output: asis
+print_slide_text(slide_texts$setting_the_context$infrastructure_and_service_delivery)
+```
 
 ## Population and Demographic Trends
 
@@ -127,8 +143,14 @@ print_slide_text(slide_texts$setting_the_context$basic_city_info)
 # Read population data
 # Eventually, move fuzzy_read inside of create_layer_function
 pop <- fuzzy_read(spatial_dir, "population", rast)
-add_pop_layer <- create_layer_function(data = pop, yaml_key = "population")
+
+# Interactive Plot (Leaflet)
+add_pop_layer <- create_layer_function(data = rast_as_vect(pop), yaml_key = "population")
 basemap %>% add_pop_layer() %>% add_aoi()
+
+# Static plot (PNG)
+plot_pop <- plot_static(data = pop, yaml_key = "population")
+save_plot(plot = plot_pop, filename = "pop.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -142,11 +164,17 @@ print_slide_text(slide_texts$demographics$population_density)
 #| output: true
 # Read RWI
 # (Necessary to include ["rwi"] because shapefile has multiple layers)
-rwi <- fuzzy_read(spatial_dir, "relative_wealth", FUN = vect)["rwi"]
+rwi <- fuzzy_read(spatial_dir, "rwi", FUN = vect)["rwi"]
+
+# Interactive Plot (Leaflet)
 add_rwi_layer <- create_layer_function(
   data = rwi, yaml_key = "rwi",
   labFormat = labelFormat(digits = 1))
 basemap %>% add_rwi_layer() %>% add_aoi()
+
+# Static plot (PNG)
+plot_rwi <- plot_static(data = rwi, yaml_key = "rwi") #+ theme(legend.position = "none")
+save_plot(plot = plot_rwi, filename = "rwi.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -160,12 +188,17 @@ print_slide_text(slide_texts$demographics$relative_wealth)
 
 ```{r}
 #| output: true
-economic_activity <- fuzzy_read(spatial_dir, "avg_rad_sum")
+economic_activity <- fuzzy_read(spatial_dir, "avg_rad_sum", rast)
 
+# Interactive Plot (Leaflet)
 add_economic_activity_layer <- create_layer_function(
-  data = economic_activity, yaml_key = "economic_activity",
+  data = rast_as_vect(economic_activity), yaml_key = "economic_activity",
   labFormat = labelFormat(digits = 2))
 basemap %>% add_economic_activity_layer() %>% add_aoi()
+
+# Static plot (PNG)
+plot_economic_activity <- plot_static(data = economic_activity, yaml_key = "economic_activity")
+save_plot(plot = plot_economic_activity, filename = "economic_activity.png", directory = styled_maps_dir)
 ```
 
 ```{r}
@@ -177,9 +210,15 @@ print_slide_text(slide_texts$economic_activity$economic_hotspots)
 
 ```{r}
 #| output: true
-economic_change <- fuzzy_read(spatial_dir, "linfit")
-add_economic_change_layer <- create_layer_function(data = economic_change, yaml_key = "economic_change")
+economic_change <- fuzzy_read(spatial_dir, "linfit", rast)
+
+# Interactive Plot (Leaflet)
+add_economic_change_layer <- create_layer_function(data = rast_as_vect(economic_change), yaml_key = "economic_change")
 basemap %>% add_economic_change_layer() %>% add_aoi()
+
+# Static plot (PNG)
+plot_economic_change <- plot_static(data = economic_change, yaml_key = "economic_change")
+save_plot(plot = plot_economic_change, filename = "economic_change.png", directory = styled_maps_dir)
 ```
 
 ```{r}

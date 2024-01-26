@@ -150,7 +150,7 @@ risk_identification:
       Delft University of Technology, Long-term Shoreline Changes (1984-2016).
       Positive change in coastline is accretion, while negative change is erosion.
   elevation:
-    method: Elevation informs an area’s vulnerability to many natural disasters. The height at which infrastructure, resources, and communities sit relative to normal water levels and tides, flood waters, and storm surges and waves informs their exposure. Elevation information is critical for communities to anticipate the impacts of disasters and to prepare resilient and cost-effective response and redevelopment strategies.
+    method: Elevation informs an area's vulnerability to many natural disasters. The height at which infrastructure, resources, and communities sit relative to normal water levels and tides, flood waters, and storm surges and waves informs their exposure. Elevation information is critical for communities to anticipate the impacts of disasters and to prepare resilient and cost-effective response and redevelopment strategies.
     footnote: 'Map data from USGS, 2015, “USGS EROS Archive - Digital Elevation”.'
   slope:
     method: Slope refers to the percentage change in elevation over a certain distance. In hilly or mountainous areas, floods can occur within minutes after heavy rains, while in flat areas, floodwaters can remain for days. Considering the slope of land is important in reducing construction costs, extending services and public facilities, minimizing the risks of hazards like flooding and landslides, and mitigating the impacts of development on natural resources.
@@ -165,6 +165,11 @@ risk_identification:
     footnote: |
       National Geophysical Data Center / World Data Service (NGDC/WDS): NCEI/WDS Global Significant Earthquake Database. NOAA National Centers for Environmental Information. DOI:10.7289/V5TD9V7K
       Note that the cited damage level is for the earthquake overall, not necessarily in the city of interest. The database defines damage levels by monetary cost: limited, < $1 million; moderate, $1–5 million; severe, $5–24 million; extreme, $25+ million.
+  liquefaction:
+    method: |
+      While all of the city has the same likelihood of seismic activity, areas within a city will typically have differing levels of vulnerability, due to factors such as soil and building construction. Liquefaction is a phenomenon where loosely packed or waterlogged sediments, particularly beneath buildings and under structures, lose their strength in response to strong ground shaking. Liquefaction in the event of an earthquake can cause increased damages.
+      This map calculates the likelihood of liquefaction using a combination of indicators such as peak ground velocity, precipitation and others. Each level determines a threshold of confidence regarding the probability of liquefaction in the particular pixel area.
+    footnote: Map data from Zorn & Koks, 2019.
   seismic_hazard:
     method: This map depicts the geographic distribution of the Peak Ground Acceleration (PGA) with a 10% probability of being exceeded in 50 years, computed for reference rock conditions (shear wave velocity of 760-800 m/s). Seismic risk in cities has increased mainly due to urbanization, poor land-use planning and construction, inadequate infrastructure and services, and environmental degradation. Urban risk predictions and expected losses from major earthquakes in the future justify proactive risk mitigation activities.
     footnote: |
@@ -182,4 +187,22 @@ risk_identification:
     footnote: |
       Map data from OpenStreetMap.
       Criticality is measured by calculating *betweenness* for each segment. Betweenness for a segment is calculated by mapping the shortest path from each intersection to every other intersection, and then taking the percentage of all trips that use that segment.
+  burnable:
+    method: This layer visualizes the burnability factor of each land cover classification, based on assigning a binned weighting factor to represent burnability of each land classification. As per Four Twenty Seven’s research and Gannon and Steinberg’s (2021) research, global trends in historical wildfire  intensity and occurrence of wildfire in each land cover classification is converted into a single burnability factor. 
+    footnote: © ESA Land Cover CCI 2020/ Gannon et.al 2021
+  moisture:
+    method: |
+      The Normalized Difference Moisture Index (NDMI) detects moisture content in vegetation, and is an indicator of water stress in crops. It is also used to identify vegetation in dry areas with an increased risk of combustion. This map computes NDMI over the June to September 2015-2022
+      NDMI measures soil moisture from a range of -1 to 1. Negative values indicates water stress, and positive values may indicate water-logging.
+      The stresses introduced by low soil moisture are borne by agricultural crops and biodiversity. Increased depletion of soil moisture also leads to a  higher risk of wildfire.
+    footnote: © ESA Land Cover CCI 2020 / Contains modified Copernicus Sentinel data (2020) processed by ESA WorldCover consortium / Gannon et al 2021
+  burnt_area:
+    method: |
+      While all of the city has the same likelihood of seismic activity, areas within a city will typically have differing levels of vulnerability, due to factors such as soil and building construction. Liquefaction is a phenomenon where loosely packed or waterlogged sediments, particularly beneath buildings and under structures, lose their strength in response to strong ground shaking. Liquefaction in the event of an earthquake can cause increased damages.
+      This map calculates the likelihood of liquefaction using a combination of indicators such as peak ground velocity, precipitation and others. Each level determines a threshold of confidence regarding the probability of liquefaction in the particular pixel area.
+    footnote:
+      Map data from Zorn & Koks, 2019.
+  fwi:
+    method: The Fire Weather Index (FWI) measures the potential for wildfire in an area at a given time, by combining measures of moisture, of built-up area, and of ignition spread. Areas with a higher index have a higher potential for wildfire, though the specific relationship between FWI and fire danger is highly localized; therefore values representing high fire potential must be determined locally.
+    footnote: Map data from NASA’s Global Fire Weather Database.
 # SECTION 8 LOCAL INSTITUTIONS AND PLANNING

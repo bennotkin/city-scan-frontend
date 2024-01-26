@@ -25,7 +25,7 @@ template:
 population:
   fuzzy_string: population
   title: 'Population density'
-  subtitle: 'Number of persons per 10,000 m^2'
+  subtitle: 'Number of persons per 10,000 m^2^'
   palette: ['#ECEB72', '#8E3933']
   basemap: 'satellite'
   group_id: 'population-density'
@@ -51,7 +51,6 @@ economic_change:
   center: 0
   bins: 0
 social_distancing:
-  fuzzy_string: ??
   title: Difficulty of Social Distancing
   palette: ['#ffffbf', '#de8250', '#a80000', '#82003b', '#4d0073']
   bins: 5
@@ -61,6 +60,8 @@ wsf:
   fuzzy_string: 'WSF.*4326'
   title: 'Year of urban expansion'
   breaks: [1985, 1986, 1996, 2006, 2015]
+  # labels: ['Before 1986', '1986', '1996', '2006', '2015']
+  # breaks: [1986, 1996, 2006, 2015] # Confusingly, if we are using discrete labels, need to remove minimum break
   labels: ['Before 1986', '1986-1995', '1996-2005', '2006-2015']
   palette: ['#FBF9CD', '#E3B854', '#BF4A3B', '#25110B']
   group_id: 'urban-extent-and-change'
@@ -71,8 +72,7 @@ impervious:
   title: Impervious Surfaces
   min: 0
   max: 100
-  labFormat:
-    suffix: '%'
+  suffix: '%'
   group_id: built-up-density
 land_cover:
   fuzzy_string: landcover
@@ -88,24 +88,45 @@ intersections:
   subtitle: Number of intersections per 1 km^2^
   palette: ['#ffffff', '#9F4830']
   group_id: intersection-density
-schools:
+school_zones:
   title: Travel distance to nearest school
   subtitle: Distance along road network in meters
-  palette: ['#2B4C29', '#C5D4C1', '#B6D053']
+  palette: ['#B6D053', '#B6D053AA', '#B6D05366']
   breaks: [800, 1600, 2400]
+  labels: ["<800 m", "800–1,600 m", "1,600–2,400 m"]
+  bins: 3
+  factor: TRUE
   # How do I indicate shading?
-  suffix: ' m'
+  # suffix: ' m'
   group_id: access-to-schools
-health_facilities:
+school_points:
+  title: School
+  palette: ['black']
+  alpha: 1
+  labels: ['School']
+  factor: TRUE
+  group_id: access-to-schools
+health_zones:
   title: Travel distance to nearest health facility
   subtitle: Distance along road network
-  palette: ['#2B4C29', '#C5D4C1', '#B6D053']
-  breaks: [1, 2, 3]
+  # palette: ['#2B4C29', '#C5D4C1', '#B6D053']
+  palette: ['#B6D053CC', '#B6D053AA', '#B6D05366']
+  breaks: [1000, 2000, 3000]
+  labels: ["<1 km", "1–2 km", "2–3 km"]
+  bins: 3
+  factor: TRUE
   # How do I indicate shading?
-  suffix: ' km'
+  group_id: access-to-healthcare
+health_points:
+  title: Health Facility
+  palette: ['black']
+  alpha: 1
+  labels: ['Health facility']
+  factor: TRUE
   group_id: access-to-healthcare
 # SECTION 6 CLIMATE CONDITIONS
 solar:
+  fuzzy_string: solar
   title: 'Photovoltaic Potential'
   subtitle: Power potential of a theoretical 1 kWp PV system (kWh)
   bins: 3
@@ -120,6 +141,7 @@ air_quality:
   breaks: [0, 5, 10, 15, 20, 30, 40, 50, 100]
   group_id: air-quality
 summer_lst:
+  fuzzy_string: Summer_LST
   # palette: 'Spectral'
   palette: ['#5290C2', '#F0EE80', '#D33837']
   # domain: 'minmax'
@@ -133,13 +155,17 @@ vegetation:
   subtitle: 'Normalized difference vegetation index (NDVI)'
   palette: ['#9999cc', '#f0f8d1', '#c2e3b8', '#87c27e', '#54a159', '#2e6a34']
   breaks: [-1, 0.015, 0.14, 0.18, 0.27, 0.36, 1]
-  labels: ['Water', 'Built-up', 'Barren', 'Shrub and Grassland', 'Sparse', 'Dense']
+  # breaks: [0.015, 0.14, 0.18, 0.27, 0.36, 1]
+  labels: ['Water (-1 to 0.015)', 'Built-up (0.015 to 0.14)', 'Barren (0.14 to 0.18)', 'Shrub and Grassland (0.18 to 0.27)', 'Sparse (0.27 to 0.36)', 'Dense (0.36 to 1)']
   group_id: vegetated-areas
 forest: # Requires preprocessing to combine forest and deforestation?
   fuzzy_string: CurrentForest
   title: "Forest cover"
-  # breaks: [0, 1]
-  palette: ['#8CC056']
+  breaks: [0, 1]
+  # bins: 2
+  # center: .75
+  palette: ['transparent', '#8CC056']
+  labels: ['', 'Current Forest']
   factor: TRUE
   group_id: 'forests-deforestation'
 deforest: # Requires preprocessing to combine forest and deforestation?
@@ -184,6 +210,7 @@ slope:
   title: Slope
   subtitle: 'Angle of hillside in degrees'
   breaks: [0, 2, 5, 10, 20, 90]
+  labels: ['<2°', '2–5°', '5–10', '10–20°', '>20°']
   palette: ['#ffffd4', '#993404']
   bins: 5
   suffix: '°'
@@ -196,10 +223,37 @@ landslides:
   labels: ['Very low', 'Low', 'Medium', 'High', 'Very high']
   breaks: [0, 1, 2, 3, 4]
   group_id: landslides
+liquefaction:
+  fuzzy_string: landslides
+  title: Liquefaction susceptibility
+  factor: TRUE
+  palette: ['#FCEFE2', '#F2C08C', '#E89251', '#D66136', '#993F2B']
+  labels: ['Very low', 'Low', 'Medium', 'High', 'Very high']
+  breaks: [1, 2, 3, 4, 5]
+  group_id: liquefaction
 road_network_criticality:
   title: Road network segment criticality
   subtitle: 'Criticality %'
   palette: ['#C5D1E9', '#8696C8', '#516BAE', '#9C2F76', '#CE3737']
   suffix: "%"
   group_id: road-network-criticality
+burnable:
+  fuzzy_string: burnable
+  title: Burnable Area
+  palette: ['#FFFFFF', '#5C1316']
+  breaks: [0, .2, .4, .6, .8, 1]
+  group_id: burnable-area
+moisture:
+  fuzzy_string: NDMI_Annual
+  title: NDMI
+  palette: ['#D45A35', '#F6F7F9', '#48A787']
+  center: 0
+  bins: 5
+  group_id: moisture
+fwi:
+  fuzzy_string: fwi
+  title: NDMI
+  palette: ['#EEEA55', '#992C29']
+  bins: 5
+  group_id: fire-potential
 # SECTION 8 LOCAL INSTITUTIONS AND PLANNING

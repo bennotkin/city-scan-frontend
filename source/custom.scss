@@ -68,7 +68,7 @@ $topbar-height: 2rem;
     padding-bottom: 3rem;
   }
 
-  >section::last-child {
+  > section:last-child {
     margin-bottom: 100vh;
   }
 
@@ -114,6 +114,8 @@ h1 {
     font-size: 1.1rem;
     border-bottom: 1px solid black;
   }
+
+  h4 {font-size: 1.1rem;}
 
   p { font-size: 1rem; }
 
