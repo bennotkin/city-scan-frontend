@@ -120,7 +120,7 @@ h1 {
     border-bottom: 1px solid black;
   }
 
-  h4 {font-size: 1.1rem;}
+  h4 { font-size: 1.1rem; }
 
   p { font-size: 1rem; }
 
@@ -185,6 +185,12 @@ h1 {
 
   #dynamic-header {
     text-transform: uppercase;
+  }
+
+  // This puts "Inputs version" on the same line as the navivation menu 
+  div.cell + p {
+    margin-top: 0;
+    padding: .25rem .5rem;
   }
 
   ul {
