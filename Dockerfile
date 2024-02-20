@@ -76,8 +76,28 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 # Pass the startup script as arguments to Tini
 CMD ["/home/scripts/gcsfuse_run.sh"]
 
-# Docker commands to build and run Docker image locally
+#### Docker commands to build and run Docker image locally ####################
+
+# Build the container
 # docker build -t nalgene .
+# Run the container without rendering the site ()
 # docker run -it --rm -v "$(pwd)"/mnt:/home/mnt -e CITY_DIR=$CITY_DIR nalgene bash
+# Run the container with rendering the site
 # docker run -it --rm -v "$(pwd)"/mnt:/home/mnt -e CITY_DIR=$CITY_DIR nalgene scripts/local_run.sh
 # where $CITY_DIR is the city-specific directory in mnt/ (e.g., 2023-10-kenya-mombasa/)
+
+# Alternatively, instead of building the container, you can run the version
+# of the image hosted on Docker Hub by simply replacing `nalgene` with 
+# `notkin/nalgene` in the command. !! This will not include any edits you've
+# made to non-mounted files !!
+
+# You can avail yourself of VS Code's functionality (instead of limiting
+# yourself to the command line), with the Dev Containers extension (see tutorial
+# at https://code.visualstudio.com/docs/devcontainers/containers
+# 1. Install Dev Containers extension
+# 2. Run the container: `docker run -it --rm -v "$(pwd)"/mnt:/home/mnt -e CITY_DIR=$CITY_DIR nalgene bash`
+# 3. Attach VS Code to the container: CMD/CTRL + SHIFT + P, then type/select
+#    "Dev Containers: Attach to Running Container..."; hit Enter again to select
+#    oddly named container
+# 4. Change directory to /home: cd ../home
+# 5. In VS Code's Explorer, click Open Folder, type /home, and hit enter
