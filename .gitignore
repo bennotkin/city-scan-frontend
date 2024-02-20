@@ -20,3 +20,5 @@ styled-maps
 rosm.cache/
 .Rproj.user
 index_cache
+.sass-cache
+source/custom.css*

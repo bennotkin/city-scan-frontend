@@ -28,7 +28,7 @@ $topbar-height: 2rem;
 .page-columns main.content {
   grid-column: screen-start-inset / screen-end-inset;
   display: grid;
-  grid-template-columns: 2fr 4fr;
+  grid-template-columns: 1fr 2fr;
   grid-template-rows: 2em auto auto auto;
   grid-column-gap: 2ch;
   align-items: start;
