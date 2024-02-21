@@ -2,7 +2,7 @@
 
 # Install R base image from Rocker (builds on Ubuntu 22.04 LTS)
 # https://github.com/rocker-org/rocker-versioned2/blob/master/dockdockeerfiles/Dockerfile_r-ver_4.0.2 
-ARG R_VERSION=4.3.1
+ARG R_VERSION=4.3.2
 FROM rocker/r-ver:${R_VERSION}
 LABEL name=nalgene \
   authors="Ben Notkin" \
