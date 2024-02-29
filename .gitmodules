@@ -1,4 +1,0 @@
-[submodule "calculations"]
-	path = calculations
-	url = https://github.com/bennotkin/city-scan
-	branch = automation
