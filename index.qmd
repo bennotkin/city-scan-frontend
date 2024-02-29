@@ -547,12 +547,81 @@ print_slide_text(slide_texts$climate_conditions$forest)
 
 ## Risk Identification
 
-### Flooding
-*(I need to download the flood data)*
+### Fluvial Flooding
+
+```{r}
+#| include: false
+
+# NOTE: Fluvial and pluvial use different methods, and the layers.yml differs for them
+# Fluvial demonstrates class date, while pluvial demonstrates (pseudo) continuous data
+fluvial_low <- fuzzy_read(spatial_dir, "fluvial.*lt1", rast)
+fluvial_med <- fuzzy_read(spatial_dir, "fluvial.*1-10", rast) * 10
+fluvial_high <- fuzzy_read(spatial_dir, "fluvial.*gt10", rast) * 100
+
+# Excluding fluvial_high because it seems to be an error
+fluvial <- max(fluvial_low, fluvial_med, na.rm = T)
+
+# Interactive Plot (Leaflet)
+add_fluvial_layer <- create_layer_function(data = rast_as_vect(fluvial), yaml_key = "fluvial")
+all_maps <- add_fluvial_layer(all_maps)
+added_layers <- c(added_layers, "fluvial-flooding")
+
+# Static plot (PNG)
+plot_fluvial <- plot_static(fluvial, yaml_key = "fluvial")
+save_plot(plot = plot_fluvial, filename = "fluvial.png", directory = styled_maps_dir)
+```
 
 ```{r}
 #| output: asis
-print_slide_text(slide_texts$risk)
+print_slide_text(slide_texts$risk_identification$flooding_builtup_fluvial)
+```
+
+### Pluvial Flooding
+
+```{r}
+#| include: false
+pluvial_low <- fuzzy_read(spatial_dir, "pluvial.*lt1", rast)
+pluvial_med <- fuzzy_read(spatial_dir, "pluvial.*1-10", rast) * 10
+pluvial_high <- fuzzy_read(spatial_dir, "pluvial.*gt10", rast) * 11
+
+# Excluding pluvial_high because it seems to be an error
+pluvial <- max(pluvial_low, pluvial_med, na.rm = T) %>%
+  aggregate(fact = 4, fun = "max")
+
+# Interactive Plot (Leaflet)
+add_pluvial_layer <- create_layer_function(data = rast_as_vect(pluvial), yaml_key = "pluvial")
+all_maps <- add_pluvial_layer(all_maps)
+added_layers <- c(added_layers, "pluvial-flooding")
+
+# Static plot (PNG)
+plot_pluvial <- plot_static(rast_as_vect(pluvial), yaml_key = "pluvial")
+save_plot(plot = plot_pluvial, filename = "pluvial.png", directory = styled_maps_dir)
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$flooding_builtup_pluvial)
+```
+
+### Combined Fluvial & Pluvial Flooding
+
+```{r}
+#| include: false
+combined_fluvial_pluvial <- max(fluvial, pluvial, na.rm = T)
+
+# Interactive Plot (Leaflet)
+add_combined_fluvial_pluvial_layer <- create_layer_function(data = rast_as_vect(combined_fluvial_pluvial), yaml_key = "flooding_combined")
+all_maps <- add_combined_fluvial_pluvial_layer(all_maps)
+added_layers <- c(added_layers, "combined-fluvial-pluvial-flooding")
+
+# Static plot (PNG)
+plot_combined_fluvial_fluvial <- plot_static(rast_as_vect(combined_fluvial_pluvial), yaml_key = "flooding_combined")
+save_plot(plot = plot_fluvial, filename = "fluvial.png", directory = styled_maps_dir)
+```
+
+```{r}
+#| output: asis
+print_slide_text(slide_texts$risk_identification$flooding_builtup_combined)
 ```
 
 ### Sea-level Rise

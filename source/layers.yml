@@ -177,23 +177,28 @@ deforest: # Requires preprocessing to combine forest and deforestation?
   group_id: 'forests-deforestation'
 # SECTION 7 RISK IDENTIFICATION
 fluvial: # This will require pre-processing
-  palette: '#446589'
+  factor: TRUE
+  palette: ['#4465893f', '#4465897f', '#446589bf']
+  breaks: [1, 10, 11]  
   labels: ['0.1–1%', '1–10%', '>10%']
-  alphas: [.25, .5, .75] 
   title: 'Fluvial flood probability'
   subtitle: 'Probability of a flood event within a 3-arc-second area in a given year'
+  group_id: fluvial-flooding
 pluvial: # This will require pre-processing
-  palette: '#446589'
+  palette: ['#4465893f', '#4465897f', '#446589bf']
+  breaks: [0, 1, 10, 11]
   labels: ['0.1–1%', '1–10%', '>10%']
-  alphas: [.25, .5, .75] 
   title: 'Pluvial flood probability'
   subtitle: 'Probability of a flood event within a 3-arc-second area in a given year'
+  group_id: pluvial-flooding
 flooding_combined: # This will require pre-processing
-  palette: '#446589'
+  factor: TRUE
+  palette: ['#4465893f', '#4465897f', '#446589bf']
+  breaks: [1, 10, 11]  
   labels: ['0.1–1%', '1–10%', '>10%']
-  alphas: [.25, .5, .75] 
   title: 'Flood probability'
   subtitle: 'Probability of a flood event within a 3-arc-second area in a given year'
+  group_id: combined-fluvial-pluvial-flooding
 sea_level_rise: NULL
 coastal_erosion: NULL
 elevation: # how to indicate contours?
