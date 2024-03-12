@@ -10,6 +10,7 @@ library(plotly)
 library(ggspatial)
 library(tidyterra)
 library(cowplot)
+library(glue)
 
 # Map Functions ----
 # Function for reading rasters with fuzzy names

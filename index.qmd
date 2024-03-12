@@ -31,10 +31,15 @@ city_params <- read_yaml(file.path(user_input_dir, "city_inputs.yml"))
 # cities <- list.files("cities")
 city <- city_params$city_name
 city_string <- tolower(city) %>% stringr::str_replace_all(" ", "-")
-country <- city_params$country
+country <- city_params$country_name
 
 # Load map layer parameters
 layer_params <- read_yaml('source/layers.yml')
+```
+
+```{r}
+#| freeze: auto
+source('_pre-render.R')
 ```
 
 ```{r}
