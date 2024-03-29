@@ -17,21 +17,31 @@
 
 /*-- scss:defaults --*/
 $presentation-font-size-root: 11pt;
-$bs-root-font-size: 16px;
+$font-size-root: 11pt;
 $pale-color: #5a6570;
 $topbar-height: 2rem;
+
+// Print variables
+$column-gap: .25in;
+$page-margin-top: .5in;
+$page-margin-bottom: .5in;
+$page-margin-left: 0.5in;
+$page-margin-right: 0.5in;
 
 /*-- scss:rules --*/
 
 // SCROLLYTELLING LAYOUT
 // Sets the page to full screen
 .page-columns main.content {
-  grid-column: screen-start-inset / screen-end-inset;
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  grid-template-rows: 2em auto auto auto;
-  grid-column-gap: 2ch;
-  align-items: start;
+  @media screen {
+    grid-column: screen-start-inset / screen-end-inset; // Maybe applies to print if I keep bootstrap style sheets
+    display: grid; // Overridden by print
+    grid-template-columns: 1fr 2fr;
+    grid-template-rows: 2em auto auto auto;
+    grid-column-gap: 2ch;
+    align-items: start;
+  }
+  @media print { display: block; }
   min-height: 90vh;
   padding-bottom: 5vh;
   border-bottom: 2px;
@@ -40,37 +50,89 @@ $topbar-height: 2rem;
 }
 
 .text-column {
-  grid-column: 1 / 2;
-  grid-row: 3 / 5;
-  
+  @media screen {
+    grid-column: 1 / 2;
+    grid-row: 3 / 5;
+    grid-column-gap: 2ch; // Set with sass variable? //Is this used / right
+  }
+
+  @media screen {
   h3 {
-    grid-column: 1 / 2;
-    grid-row-start: 1;
-    margin-top: 0;
+    grid-column: 1 / 2; // Overridden by print
+    grid-row-start: 1; // Overridden by print
+    margin-top: 0; // Also set in print
   }
-
-  div.footnote {
-    grid-column: 1 / 2;
-    grid-row: 3 / 4;
-    // align-self: end; // Now that the divs are `display: flex`, `align-self: end` pushes to the rights
+}
+@media print {
+  h2, h3 {
+    grid-column: 1 / 4;
+    grid-row: 1 / 2;
+    // margin-top: 0; // Already set for screen
   }
+  h3 { align-self: start; }
+}
 
-  // Prevent map from scrolling up too much & ensuring all sections hit scrollama offset point
   section {
-    min-height: 50vh;
-    section.level4 {min-height: 0vh; padding-bottom: 1rem;}
-    // This is probably an overly complicated way to ensure each slide is vertically centered
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    @media screen {
+      // Prevent map from scrolling up too much & ensuring all sections hit scrollama offset point
+        min-height: 50vh;
+        section.level4 {min-height: 0vh; padding-bottom: 1rem; } // When is this used?
+        // This is probably an overly complicated way to ensure each slide is vertically centered
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+    }
+
+    section.level3 {
+      @media screen { padding-bottom: 3rem; }
+      @media print {
+        // height: calc(8.5in - $page-margin-top);
+        height: 7.45in;
+        // min-height: 7.5in;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-column-gap: $column-gap;
+        grid-template-rows: 1fr repeat(2, min-content) minmax(.5in, max-content);
+        align-items: end;
+        align-content: stretch;
+        // padding-bottom: 3rem;
+        // border: 1px solid black;
+      }
+    }
+
+  @media screen {
+    >section:last-child {
+      margin-bottom: 100vh;
+    }
   }
 
-  section.level3 {
-    padding-bottom: 3rem;
-  }
+  div.takeaways, div.method { grid-column: 1 / 2; }
+  
+  div.footnote {
+    @media screen {
+        grid-column: 1 / 2; // Overridden by print
+        grid-row: 3 / 4; // Overridden by print
+        // align-self: end; // Now that the divs are `display: flex`, `align-self: end` pushes to the rights
+      }
 
-  > section:last-child {
-    margin-bottom: 100vh;
+    @media print {
+      grid-column: 1 / 4;
+      grid-row: 4 / 5;
+      align-self: end;
+      column-count: 3;
+      column-gap: $column-gap;
+      border-top: 1px solid $pale-color;
+      padding-top: 4px;
+      color: $pale-color;
+      // min-height: .5in;
+      height: .5in;
+  
+      p {
+        margin-top: 0;
+      }  
+    }
   }
 
   form {
@@ -80,12 +142,14 @@ $topbar-height: 2rem;
 
 // TYPOGRAPHY
 .text-column {
+  @media screen {
   // Text is grey when not in focus, black when in focus
   color: darkgrey;
   section.is-active {color: black;};
-  section#executive-summary {color: black;};
+  section#executive-summary { color: black; };
+  }
 
-h1 {
+  h1 {
     font-size: 3rem;
     font-weight: 600;
     color: #1e90ff;
@@ -105,48 +169,69 @@ h1 {
     text-transform: uppercase;
   }
 
-  h2 {
+  h2 { // Previously also applied to h2::before
     font-size: 2rem;
     color: dodgerblue;
     background-image: radial-gradient(dodgerblue 1px, transparent 0);
     background-size: 10px 10px;
-    padding: 30vh 1.5rem 0.5rem 1.5rem;
+    padding: 15vh 1.5rem 0.5rem 1.5rem;
+    @media print{ padding: 2in 1.5rem 4.5in 1.5rem }
     margin-left: -1.5rem;
     margin-right: -1.5rem;
   }
 
-  h3 {
+  h3 { // Previously also applied to h3::before 
     font-size: 1.1rem;
     border-bottom: 1px solid black;
   }
-
   h4 { font-size: 1.1rem; }
-
   p { font-size: 1rem; }
-
   .takeaways { font-size: 1.1rem; }
-
   div.footnote p {
-      font-size: 0.8rem;
-      color: $pale-color;
+    font-size: 0.8rem;
+    color: $pale-color;
+  }
+
+  ul {
+    padding-left: .25in;
+    margin-block-start: 0;
+    margin-block-end: 0;
   }
 }
 
 // MAPS & FIGURES
-.maps {
-  grid-column: 2 / 3;
-  grid-row: 1 / 5;
-  position: sticky;
-  top: $topbar-height;
-  height: 100vh;
-
-  // I now set image height in R, but leaving this here to remember CSS tags
-  // img,
-  // .leaflet.html-widget {
-    // height: 100vh !important;
-  // }
+@media screen {
+  .maps {
+    grid-column: 2 / 3;
+    grid-row: 1 / 5;
+    position: sticky;
+    top: $topbar-height;
+    height: 100vh;
+  
+    // I now set image height in R, but leaving this here to remember CSS tags
+    // img,
+    // .leaflet.html-widget {
+      // height: 100vh !important;
+    // }
+  }
 }
 
+@media print {
+  section.level3>p:has(img) {
+    grid-column: 2 / 4;
+    grid-row: 1 / 4;
+    // grid-row-end: 4;
+    width: 100%;
+    // height: 1in;
+    
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+@media screen{
 // TOP BAR 
 .topbar {
   width: 100%;
@@ -188,7 +273,7 @@ h1 {
   }
 
   // This puts "Inputs version" on the same line as the navivation menu 
-  div.cell + p {
+  div.cell+p {
     margin-top: 0;
     padding: .25rem .5rem;
   }
@@ -281,17 +366,127 @@ h1 {
     width: 100%;
   }
 }
+}
+
+// Section & Slide Counters
+.text-column {
+  h1 {
+    counter-reset: section_count;
+    // counter-reset: slide_count;
+  }
+
+  h2 {
+    counter-increment: section_count;
+    counter-reset: slide_count;
+  }
+
+  h3 {
+    counter-increment: slide_count;
+  }
+
+  h2::before {
+      // content: "string";
+      color: $pale-color;
+      content: counter(section_count);
+      padding-right: 3ch;
+    }
+
+  h3::before {
+    // content: "string";
+    color: $pale-color;
+    content: counter(section_count) "." counter(slide_count);
+    padding-right: 1ch;
+    }
+}
 
 // HIDDEN ELEMENTS
 #title-block-header { display: none; }
 
 .setup section { display: none; }
 
-// Leaflet controls and legends
-// .leaflet .info, .leaflet-control-layers, .leaflet-control-layers-expanded, .leaflet-control,
-// .leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar
-// {
-	// box-shadow: none;
-    // border-radius: 0;
-    // border: 1px solid grey;
-// }
+// Print specific; either move to above, or move above to here
+@media print {
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
+    font-size: 10pt;
+    color: black;
+  }
+
+  h2 {
+    page-break-after: always;
+    string-set: section_title content(); 
+  }
+
+  // h3 {
+  //   display: none;
+  //   string-set: slide_title content(); 
+  // }
+  p { orphans: 3; }
+  
+  .text-column {
+    section.level2 {
+      page-break-before: always;
+      page-break-inside: avoid;
+    }
+
+    section.level3 {
+      page-break-after: always;
+      page-break-inside: avoid;
+    }
+  }
+  
+  @page {
+    
+    font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
+    font-size: 11pt;
+    color: $pale-color;
+
+    size: letter landscape;
+    margin-top: $page-margin-top;
+    margin-bottom: $page-margin-bottom;
+    margin-left: $page-margin-left;
+    margin-right: $page-margin-right;
+    // padding: 0 .1in;
+    // border-left: 1px solid $pale-color;
+    // border-right: 1px solid $pale-color;
+    
+    // @top-left {
+    //   content: string(slide_title);
+    //   color: black;
+    //   font-weight: 400;
+    //   text-transform: uppercase;
+    //   font-size: 1.1rem;
+    //   border-bottom: 1px solid black;
+    // }
+    
+    @left-middle {
+      content: string(section_title);
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+    }
+    
+    @right-top {
+      content: "Goris, Armenia"; // This needs to be automated with string-set
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+    
+    @right-middle {
+      content: "City Scan";
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+    
+    @right-bottom {
+      content: "City Resilience Program";
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+    }
+    
+    @bottom-left-corner {
+      text-align: center;
+      content: counter(page);
+    }
+  }
+}

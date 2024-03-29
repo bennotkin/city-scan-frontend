@@ -331,7 +331,7 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
   return(list(layer = layer, scale = fill_scale, theme = theme))
 }
 
-plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, ...) {
+plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, plot_aoi = T, ...) {
   params <- prepare_parameters(yaml_key = yaml_key, ...)
   layer <- create_static_layer(data, params = params)
   # baseplot <- if (is.null(baseplot)) ggplot() + tiles else baseplot + ggnewscale::new_scale_fill()
@@ -359,6 +359,11 @@ plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, ...) {
           axis.ticks = element_blank(),
           axis.ticks.length = unit(0, "pt"),
           plot.margin = margin(0,0,0,0))
+  if (plot_aoi) p <- p + geom_sf(data = aoi, fill = NA, linetype = "dashed", linewidth = .5) + 
+        coord_sf(
+          expand = F,
+          xlim = st_bbox(static_map_bounds)[c(1,3)],
+          ylim = st_bbox(static_map_bounds)[c(2,4)])
   if (!is.null(filename)) save_plot(filename = filename, plot = p, directory = styled_maps_dir)
   return(p)
 }
@@ -520,6 +525,10 @@ read_md <- function(file) {
     return(section_list)
   }, simplify = F)
   return(text_list)
+}
+
+double_space <- function(x) {
+  str_replace(x, "\\n", "\n\n")
 }
 
 # merge_text_lists <- function(...) {

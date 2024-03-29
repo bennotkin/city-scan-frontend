@@ -68,7 +68,7 @@ title: "`r paste(city, country, sep = ', ')`, City Scan"
 ```{r}
 # Get text
 city_text <- read_md(file.path(user_input_dir, "text-files/manual-text.md"))
-generic_text <- read_yaml("source/generic-text.yml")
+generic_text <- read_yaml("source/generic-text.yml") %>% rapply(double_space, how = "replace") # Do I only want this for print?
 slide_texts <- merge_lists(city_text, generic_text)
 ```
 
@@ -144,7 +144,7 @@ print_slide_text(slide_texts$setting_the_context$infrastructure_and_service_deli
 
 ### Population Growth
 
-<!-- ![](generated/generated/plots/oxford-pop-growth.png) -->
+![](generated/plots/oxford-pop-growth.png)
 ```{r, output=TRUE}
 # saveRDS(pop_growth_plot, "generated/generated/plots/pop-growth.rds")
 ggplotly(readRDS("generated/plots/pop-growth.rds"))
@@ -157,7 +157,7 @@ print_slide_text(slide_texts$demographics$population_growth)
 
 ### Population Density (chart)
 
-<!-- ![](generated/plots/oxford-pop-density-scatter.png) -->
+![](generated/plots/oxford-pop-density-scatter.png)
 ```{r, output=TRUE}
 # saveRDS(density_plot, "generated/plots/density.rds")
 ggplotly(readRDS("generated/plots/density.rds") + labs(y = "People per square kilometer"))
@@ -170,7 +170,7 @@ print_slide_text(slide_texts$demographics$population_density_chart)
 
 ### Population Distribution by Age & Sex
 
-<!-- ![](generated/plots/world-pop-age-sex.png) -->
+![](generated/plots/world-pop-age-sex.png)
 ```{r, output=TRUE}
 # saveRDS(pop_age_sex_plot, "generated/plots/age-sex-distribution.rds")
 ggplotly(readRDS("generated/plots/age-sex-distribution.rds"))
@@ -185,6 +185,7 @@ print_slide_text(slide_texts$demographics$population_distribution_age_sex)
 
 ```{r}
 #| include: false
+#| label: pop
 # Read population data
 # Eventually, move fuzzy_read inside of create_layer_function
 pop <- fuzzy_read(spatial_dir, "population", rast)
@@ -201,6 +202,8 @@ plot_pop <- plot_static(data = pop, yaml_key = "population")
 save_plot(plot = plot_pop, filename = "pop.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/pop.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$demographics$population_density)
@@ -210,6 +213,7 @@ print_slide_text(slide_texts$demographics$population_density)
 
 ```{r}
 #| include: false
+#| label: rwi
 # Read RWI
 # (Necessary to include ["rwi"] because shapefile has multiple layers)
 rwi <- fuzzy_read(spatial_dir, "rwi", FUN = vect)["rwi"]
@@ -228,6 +232,8 @@ plot_rwi <- plot_static(data = rwi, yaml_key = "rwi") #+ theme(legend.position =
 save_plot(plot = plot_rwi, filename = "rwi.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/rwi.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$demographics$relative_wealth)
@@ -238,6 +244,8 @@ print_slide_text(slide_texts$demographics$relative_wealth)
 ### Economic Hotspots
 
 ```{r}
+#| include: false
+#| label: economic_activity
 economic_activity <- fuzzy_read(spatial_dir, "avg_rad_sum", rast)
 
 # Interactive Plot (Leaflet)
@@ -252,6 +260,8 @@ plot_economic_activity <- plot_static(data = economic_activity, yaml_key = "econ
 save_plot(plot = plot_economic_activity, filename = "economic_activity.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/economic_activity.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$economic_activity$economic_hotspots)
@@ -260,6 +270,8 @@ print_slide_text(slide_texts$economic_activity$economic_hotspots)
 ### Change in Economic Hotspots
 
 ```{r}
+#| include: false
+#| label: economic_change
 economic_change <- fuzzy_read(spatial_dir, "linfit", rast)
 
 # Interactive Plot (Leaflet)
@@ -271,6 +283,8 @@ added_layers <- c(added_layers, layer_params[["economic_change"]]$group_id)
 plot_economic_change <- plot_static(data = economic_change, yaml_key = "economic_change")
 save_plot(plot = plot_economic_change, filename = "economic_change.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/economic_change.png)
 
 ```{r}
 #| output: asis
@@ -290,6 +304,7 @@ print_slide_text(slide_texts$economic_activity$economic_change)
 ### Urban Extent and Change
 
 ```{r}
+#| include: false
 wsf <- fuzzy_read(spatial_dir, "wsf.*4326.tif$", rast)
 values(wsf)[values(wsf) == 0] <- NA
 
@@ -302,6 +317,8 @@ added_layers <- c(added_layers, layer_params[["wsf"]]$group_id)
 plot_wsf <- plot_static(data = wsf, yaml_key = "wsf")
 save_plot(plot = plot_wsf, filename = "wsf.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/wsf.png)
 
 ```{r}
 #| output: asis
@@ -327,6 +344,7 @@ print_slide_text(slide_texts$built_form$builtup_density)
 ### Land Cover
 
 ```{r}
+#| include: false
 land_cover <- fuzzy_read(spatial_dir, "lc.tif", rast)
 values(land_cover)[values(land_cover) == 0] <- NA
 
@@ -339,6 +357,8 @@ added_layers <- c(added_layers, "land-cover")
 plot_land_cover <- plot_static(data = land_cover, yaml_key = "land_cover")
 save_plot(plot = plot_land_cover, filename = "land_cover.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/land_cover.png)
 
 ```{r}
 #| output: asis
@@ -355,6 +375,11 @@ print_slide_text(slide_texts$built_form$land_cover)
 
 # all_maps <- add_intersections_layer(all_maps)
 # added_layers <- c(added_layers, "intersection-density")
+```
+
+```{r}
+#| output: true
+# plot_intersections
 ```
 
 ```{r}
@@ -383,10 +408,12 @@ all_maps <- add_school_zones_layer(all_maps) %>% add_school_points_layer()
 added_layers <- c(added_layers, "access-to-schools")
 
 # Static plot (PNG)
-plot_school <- plot_static(data = school_zones, yaml_key = "school_zones")
+plot_school <- plot_static(data = school_zones, yaml_key = "school_zones", plot_aoi = F)
 plot_school <- plot_static(data = school_points, yaml_key = "school_points", baseplot = plot_school)
 save_plot(plot = plot_school, filename = "school.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/school.png)
 
 ```{r}
 #| output: asis
@@ -412,10 +439,12 @@ all_maps <- add_health_zones_layer(all_maps) %>% add_health_points_layer()
 added_layers <- c(added_layers, "access-to-healthcare")
 
 # Static plot (PNG)
-plot_health <- plot_static(data = health_zones, yaml_key = "health_zones")
+plot_health <- plot_static(data = health_zones, yaml_key = "health_zones", plot_aoi = F)
 plot_health <- plot_static(data = health_points, yaml_key = "health_points", baseplot = plot_health)
 save_plot(plot = plot_health, filename = "health.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/health.png)
 
 ```{r}
 #| output: asis
@@ -440,6 +469,13 @@ plot_solar <- plot_static(data = solar, yaml_key = "solar")
 save_plot(plot = plot_solar, filename = "solar.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/solar.png)
+
+```{r}
+#| output: true
+# plot_
+```
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$climate_conditions$solar)
@@ -460,6 +496,8 @@ added_layers <- c(added_layers, "air-quality")
 plot_air_quality <- plot_static(data = air_quality, yaml_key = "air_quality")
 save_plot(plot = plot_air_quality, filename = "air_quality.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/air_quality.png)
 
 ```{r}
 #| output: asis
@@ -485,6 +523,8 @@ plot_summer_lst <- plot_static(data = summer_lst, yaml_key = "summer_lst")
 save_plot(plot = plot_summer_lst, filename = "summer_lst.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/summer_lst.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$climate_conditions$summer_lst)
@@ -508,6 +548,8 @@ added_layers <- c(added_layers, "vegetated-areas")
 plot_vegetation <- plot_static(data = vegetation, yaml_key = "vegetation")
 save_plot(plot = plot_vegetation, filename = "vegetation.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/vegetation.png)
 
 ```{r}
 #| output: asis
@@ -545,6 +587,8 @@ plot_forest_deforest <- plot_static(deforest, "deforest", baseplot = plot_forest
 save_plot(plot = plot_forest_deforest, filename = "forest_deforest.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/forest_deforest.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$climate_conditions$forest)
@@ -576,6 +620,8 @@ plot_fluvial <- plot_static(fluvial, yaml_key = "fluvial")
 save_plot(plot = plot_fluvial, filename = "fluvial.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/fluvial.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$risk_identification$flooding_builtup_fluvial)
@@ -603,6 +649,8 @@ plot_pluvial <- plot_static(rast_as_vect(pluvial), yaml_key = "pluvial")
 save_plot(plot = plot_pluvial, filename = "pluvial.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/pluvial.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$risk_identification$flooding_builtup_pluvial)
@@ -620,9 +668,11 @@ all_maps <- add_combined_fluvial_pluvial_layer(all_maps)
 added_layers <- c(added_layers, "combined-fluvial-pluvial-flooding")
 
 # Static plot (PNG)
-plot_combined_fluvial_fluvial <- plot_static(rast_as_vect(combined_fluvial_pluvial), yaml_key = "flooding_combined")
-save_plot(plot = plot_fluvial, filename = "fluvial.png", directory = styled_maps_dir)
+plot_combined_fluvial_pluvial <- plot_static(rast_as_vect(combined_fluvial_pluvial), yaml_key = "flooding_combined")
+save_plot(plot = plot_combined_fluvial_pluvial, filename = "combined-fluvial-pluvial.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/combined-fluvial-pluvial.png)
 
 ```{r}
 #| output: asis
@@ -666,6 +716,8 @@ plot_elevation <- plot_static(data = elevation, yaml_key = "elevation", breaks =
 save_plot(plot = plot_elevation, filename = "elevation.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/elevation.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$risk_identification$elevation)
@@ -689,6 +741,8 @@ plot_slope <- plot_static(data = slope, yaml_key = "slope")
 save_plot(plot = plot_slope, filename = "slope.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/slope.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$risk_identification$slope)
@@ -709,6 +763,8 @@ added_layers <- c(added_layers, "landslides")
 plot_landslides <- plot_static(data = landslides, yaml_key = "landslides")
 save_plot(plot = plot_landslides, filename = "landslides.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/landslides.png)
 
 ```{r}
 #| output: asis
@@ -731,6 +787,8 @@ plot_liquefaction <- plot_static(data = liquefaction, yaml_key = "liquefaction")
 save_plot(plot = plot_liquefaction, filename = "liquefaction.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/liquefaction.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$risk_identification$liquefaction)
@@ -751,6 +809,9 @@ added_layers <- c(added_layers, "burnable-area")
 plot_burnable <- plot_static(data = burnable, yaml_key = "burnable")
 save_plot(plot = plot_burnable, filename = "burnable.png", directory = styled_maps_dir)
 ```
+
+![](generated/styled-maps/burnable.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$risk_identification$burnable)
@@ -774,6 +835,8 @@ plot_moisture <- plot_static(data = moisture_poly, yaml_key = "moisture")
 save_plot(plot = plot_moisture, filename = "moisture.png", directory = styled_maps_dir)
 ```
 
+![](generated/styled-maps/moisture.png)
+
 ```{r}
 #| output: asis
 print_slide_text(slide_texts$risk_identification$moisture)
@@ -792,6 +855,11 @@ print_slide_text(slide_texts$risk_identification$moisture)
 # # Static plot (PNG)
 # plot_burnt_area <- plot_static(data = burnt_area, yaml_key = "burnt_area")
 # save_plot(plot = plot_burnt_area, filename = "burnt_area.png", directory = styled_maps_dir)
+```
+
+```{r}
+#| output: true
+# plot_burnt_area
 ```
 
 ```{r}
@@ -814,6 +882,8 @@ added_layers <- c(added_layers, "fire-potential")
 # plot_fwi <- plot_static(data = fwi, yaml_key = "fwi")
 # save_plot(plot = plot_fwi, filename = "fwi.png", directory = styled_maps_dir)
 ```
+
+<!-- ![](generated/styled-maps/fwi.png) -->
 
 ```{r}
 #| output: asis
