@@ -615,13 +615,14 @@ print_slide_text(slide_texts$climate_conditions$forest)
 #| label: fluvial
 
 # NOTE: Fluvial and pluvial use different methods, and the layers.yml differs for them
-# Fluvial demonstrates class date, while pluvial demonstrates (pseudo) continuous data
-fluvial_low <- fuzzy_read(spatial_dir, "fluvial.*lt1", rast)
-fluvial_med <- fuzzy_read(spatial_dir, "fluvial.*1-10", rast) * 10
-fluvial_high <- fuzzy_read(spatial_dir, "fluvial.*gt10", rast) * 100
+# Fluvial demonstrates class data, while pluvial demonstrates (pseudo) continuous data
+fluvial_low <- terra::crop(fuzzy_read(spatial_dir, "fluvial.*lt1.tif$", rast), static_map_bounds)
+fluvial_med <- terra::crop(fuzzy_read(spatial_dir, "fluvial.*1-10.tif$", rast), static_map_bounds) * 10
+fluvial_high <- terra::crop(fuzzy_read(spatial_dir, "fluvial.*gt10.tif$", rast), static_map_bounds) * 100
 
-# Excluding fluvial_high because it seems to be an error
-fluvial <- max(fluvial_low, fluvial_med, na.rm = T)
+fluvial <- max(fluvial_low, fluvial_med, fluvial_high, na.rm = T)
+
+if (all(is.na(values(fluvial)))) values(fluvial)[1] <- 0 # Temporary fix for when fluvial is all NAs
 
 # Interactive Plot (Leaflet)
 add_fluvial_layer <- create_layer_function(data = rast_as_vect(fluvial), yaml_key = "fluvial")
@@ -645,9 +646,11 @@ print_slide_text(slide_texts$risk_identification$flooding_builtup_fluvial)
 ```{r}
 #| include: false
 #| label: pluvial
+pluvial_low <- terra::crop(fuzzy_read(spatial_dir, "pluvial.*lt1.tif$", rast), static_map_bounds)
+pluvial_med <- terra::crop(fuzzy_read(spatial_dir, "pluvial.*1-10.tif$", rast), static_map_bounds) * 10
+pluvial_high <- terra::crop(fuzzy_read(spatial_dir, "pluvial.*gt10.tif$", rast), static_map_bounds) * 11
 
-# Excluding pluvial_high because it seems to be an error
-pluvial <- max(pluvial_low, pluvial_med, na.rm = T) %>%
+pluvial <- max(pluvial_low, pluvial_med, pluvial_high, na.rm = T) %>%
   aggregate(fact = 4, fun = "max")
 
 # Interactive Plot (Leaflet)
@@ -672,15 +675,17 @@ print_slide_text(slide_texts$risk_identification$flooding_builtup_pluvial)
 ```{r}
 #| include: false
 #| label: combined_pluvial_fluvial
+# CRASHES R, maybe due to memory? 
+# combined_fluvial_pluvial <- max(fluvial, pluvial, na.rm = T)
 
-# Interactive Plot (Leaflet)
-add_combined_fluvial_pluvial_layer <- create_layer_function(data = rast_as_vect(combined_fluvial_pluvial), yaml_key = "flooding_combined")
-all_maps <- add_combined_fluvial_pluvial_layer(all_maps)
-added_layers <- c(added_layers, "combined-fluvial-pluvial-flooding")
+# # Interactive Plot (Leaflet)
+# add_combined_fluvial_pluvial_layer <- create_layer_function(data = rast_as_vect(combined_fluvial_pluvial), yaml_key = "flooding_combined")
+# all_maps <- add_combined_fluvial_pluvial_layer(all_maps)
+# added_layers <- c(added_layers, "combined-fluvial-pluvial-flooding")
 
-# Static plot (PNG)
-plot_combined_fluvial_pluvial <- plot_static(rast_as_vect(combined_fluvial_pluvial), yaml_key = "flooding_combined")
-save_plot(plot = plot_combined_fluvial_pluvial, filename = "combined-fluvial-pluvial.png", directory = styled_maps_dir)
+# # Static plot (PNG)
+# plot_combined_fluvial_pluvial <- plot_static(rast_as_vect(combined_fluvial_pluvial), yaml_key = "flooding_combined")
+# save_plot(plot = plot_combined_fluvial_pluvial, filename = "combined-fluvial-pluvial.png", directory = styled_maps_dir)
 ```
 
 ![](generated/styled-maps/combined-fluvial-pluvial.png)
