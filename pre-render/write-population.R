@@ -1,4 +1,7 @@
+source("source/fns-pop.R")
+
 # Is city in Oxford Economics?
+paths <- read_yaml("calculations/file-locations.yml")
 oxford_locations <- readr::read_csv(paths$oxford_locations_file, col_types = "c")
 oxford_locations_in_country <- dplyr::filter(oxford_locations, Country == country)
 in_oxford <- city %in% oxford_locations_in_country$Location
@@ -9,7 +12,7 @@ if (!in_oxford) {
 }
 
 if (!exists("oxford_full")) oxford_full <-
-  read_csv(paths$oxford_file,
+  readr::read_csv(paths$oxford_file,
           col_types = "cccccccccdddddddddddddddddddddddddddddddddddddddddcllldlcclcc")
 
 # Find 2021 (or most recent) population
@@ -60,7 +63,7 @@ if (nrow(oxford) > 0) {
       subset(Year <= 2021 & !is.na(Population))
   bm_areas <- read_csv(paths$oxford_areas_file, col_types = "ccd") %>%
     mutate(Location = str_to_title(Location)) %>%
-    filter(Location %in% str_to_title(pop_longitude$Location)) %>%
+    filter(Location %in% str_to_title(pop_oxford$Location)) %>%
     select(-Country)
   if (any(duplicated(bm_areas$Location))) stop("Multiple Oxford Economics cities have been matched with the same name")
   pop_oxford <- left_join(pop_oxford, bm_areas, by = "Location")
@@ -107,5 +110,5 @@ pop_longitude <- pop_longitude %>%
   fill(Area_km, Population, Country, .direction = "updown") %>%
   ungroup() %>%
   distinct(Location, Year, Population, .keep_all = T)
-write_csv(pop_longitude, file.path(process_output_dir, "population.csv"))
+readr::write_csv(pop_longitude, file.path(process_output_dir, "population.csv"))
 

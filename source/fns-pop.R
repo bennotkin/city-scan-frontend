@@ -1,3 +1,7 @@
+library(readr)
+library(rvest)
+library(tidyr)
+
 # Population functions
 # Defining the UN Data and citypopulation.de pop function because it is used as backup in Oxford and in Density
 get_un_pop_growth <- function(city, country = country) {
@@ -57,3 +61,5 @@ un_de_pop_growth <- function(city, country) {
                           get_de_pop_growth(city, country))
   return(pop_growth)
 }
+
+tolatin <- function(x) stringi::stri_trans_general(x, id = "Latin-ASCII")
