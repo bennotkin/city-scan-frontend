@@ -1,16 +1,25 @@
 # Packages ----
-library(terra)
-library(sf)
-library(leaflet)
-library(yaml)
-library(stringr)
-# library(mapview)
-library(dplyr)
-library(plotly)
-library(ggspatial)
-library(tidyterra)
-library(cowplot)
-library(glue)
+# Install packages from CRAN using librarian
+if (!"librarian" %in% installed.packages()) install.packages("librarian")
+librarian::shelf(
+  terra, 
+  sf, 
+  leaflet, 
+  yaml, 
+  stringr, 
+  dplyr, 
+  ggplot2, # 3.5 or higher
+  plotly, 
+  ggspatial, 
+  tidyterra, 
+  cowplot, 
+  glue, 
+  purrr, 
+  readr)
+
+librarian::stock(
+  ggnewscale # 4.10 or higher
+)
 
 # Map Functions ----
 # Function for reading rasters with fuzzy names
@@ -141,6 +150,8 @@ create_layer_function <- function(data, yaml_key = NULL, params = NULL, color_sc
     params <- prepare_parameters(yaml_key, ...)
   }
 
+  if (!is.null(params$data_variable)) data <- data[params$data_variable]
+
   if (!is.null(params$factor) && params$factor) {
     data <- 
       set_layer_values(
@@ -256,6 +267,9 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
   if (is.null(params)) {
     params <- prepare_parameters(yaml_key, ...)
   }
+
+  if (!is.null(params$data_variable)) data <- data[params$data_variable]
+
   if (!is.null(params$factor) && params$factor) {
     data <- 
       set_layer_values(
@@ -652,3 +666,5 @@ break_pretty2 <- function(data, n = 6, method = "quantile", FUN = signif, digits
 
   return(pretty_breaks)
 }
+
+include_html_chart <- \(file) cat(str_replace_all(readLines(file), "\\s+", " "), sep="\n")
