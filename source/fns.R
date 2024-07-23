@@ -332,16 +332,15 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
                 method = params$breaks_method %>% {if(is.null(.)) "quantile" else .})
   }
 
-  # geometry_type <- c(tryCatch(st_geometry_type(data), error = \(e) NULL), tryCatch(geomtype(data),  error = \(e) NULL))
-  # if (str_detect(tolower(geometry_type), "point")) {
-    # fill_scale <- NULL
-    # } else {
   fill_scale <- if (length(palette) == 0) NULL else {
         if (!is.null(params$factor) && params$factor) {
-          scale_fill_manual(values = palette, na.value = "transparent", name = title)
+      # Switched to na.translate = F because na.value = "transparent" includes
+      # NA in legend for forest. Haven't tried with non-raster.
+      scale_fill_manual(values = palette, na.translate = F, name = title)
         } else if (params$bins == 0) {
             scale_fill_gradientn(
               colors = palette,
+          limits = if (is.null(params$domain)) NULL else params$domain,
               rescaler = if (!is.null(params$center)) ~ scales::rescale_mid(.x, mid = params$center) else scales::rescale,
               na.value = "transparent",
               name = title)
@@ -351,6 +350,7 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
               colors = palette,
               # Length of labels is one less than breaks when we want a discrete legend
               breaks = if (is.null(params$breaks)) waiver() else if (diff(lengths(list(params$labels, params$breaks))) == 1) params$breaks[-1] else params$breaks,
+          # breaks_midpoints() is important for getting the legend colors to match the specified colors
               values = if (is.null(params$breaks)) NULL else breaks_midpoints(params$breaks, rescaler = if (!is.null(params$center)) scales::rescale_mid else scales::rescale, mid = params$center),
               labels = if (is.null(params$labels)) waiver() else params$labels,
               limits = if (is.null(params$breaks)) NULL else range(params$breaks),
@@ -358,6 +358,10 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
               na.value = "transparent",
               oob = scales::oob_squish,
               name = title,
+          guide = if (diff(lengths(list(params$labels, params$breaks))) == 1) "legend" else "colorsteps"
+          )
+    }
+  }
 
   color_scale <- if (length(params$stroke) < 2 || is.null(params$stroke$palette)) {
     NULL
