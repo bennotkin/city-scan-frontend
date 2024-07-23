@@ -81,33 +81,35 @@ rast_as_vect <- function(x, digits = 8, ...) {
 
 # Functions for making the maps
 plot_basemap <- function(basemap_style = "vector") {
-  basemap <-leaflet(
+  basemap <-
+    leaflet(
       data = aoi,
       # Need to probably do this with javascript
       height = "calc(100vh - 2rem)",
       width = "100%",
       options = leafletOptions(zoomControl = F, zoomSnap = 0.1)) %>% 
-    fitBounds(lng1 = unname(aoi_bounds$xmin - (aoi_bounds$xmax - aoi_bounds$xmin)/20),
+    fitBounds(
+      lng1 = unname(aoi_bounds$xmin - (aoi_bounds$xmax - aoi_bounds$xmin)/20),
               lat1 = unname(aoi_bounds$ymin - (aoi_bounds$ymax - aoi_bounds$ymin)/20),
               lng2 = unname(aoi_bounds$xmax + (aoi_bounds$xmax - aoi_bounds$xmin)/20),
               lat2 = unname(aoi_bounds$ymax + (aoi_bounds$ymax - aoi_bounds$ymin)/20))
-
-    { if (basemap_style == "satellite") { 
+  if (basemap_style == "satellite") { 
       basemap <- basemap %>% addProviderTiles(., providers$Esri.WorldImagery,
                        options = providerTileOptions(opacity = basemap_opacity))
     } else if (basemap_style == "vector") {
       # addProviderTiles(., providers$Wikimedia,
-      basemap <- basemap %>% addProviderTiles(providers$CartoDB.Positron)
+    basemap <- basemap %>%
+      addProviderTiles(providers$CartoDB.Positron)
                        # addProviderTiles(., providers$Stadia.AlidadeSmooth,
                       #  options = providerTileOptions(opacity = basemap_opacity))
-    } }
+  }
   return(basemap)
 }
 
 prepare_parameters <- function(yaml_key, ...) {
   # Override the layers.yaml parameters with arguments provided to ...
   # Parameters include bins, breaks, center, color_scale, domain, labFormat, and palette
-  layer_params <- read_yaml('source/layers.yml')
+  layer_params <- read_yaml(layer_params_file)
   if (yaml_key %ni% names(layer_params)) stop(paste(yaml_key, "is not a key in source/layers.yml"))
   yaml_params <- layer_params[[yaml_key]]
   new_params <- list(...)
@@ -128,7 +130,7 @@ prepare_parameters <- function(yaml_key, ...) {
   # Apply layer transparency to palette
   params$palette <- sapply(params$palette, \(p) {
     # If palette has no alpha, add
-    if (nchar(p) == 7 | substr(p, 1, 1) != "#") return(alpha(p, layer_alpha))
+    if (nchar(p) == 7 | substr(p, 1, 1) != "#") return(scales::alpha(p, layer_alpha))
     # If palette already has alpha, multiply
     if (nchar(p) == 9) {
       alpha_hex <- as.hexmode(substr(p, 8, 9))
@@ -338,7 +340,7 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
       !is.null(params$labels) && is.character(params$labels)
       | is.character(layer_values)) 0 else 1
 
-  theme = theme(
+  theme <- theme(
     legend.title = ggtext::element_markdown(),
     legend.text.align = legend_text_alignment)
 
@@ -384,7 +386,6 @@ plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, plot_a
 
 save_plot <- function(plot = NULL, filename, directory, rel_widths = c(3, 1)) {
   # Saves plots with set legend widths
-
   plot_layout <- plot_grid(
     plot + theme(legend.position = "none"),
     get_legend(plot),
@@ -628,7 +629,8 @@ aspect_buffer <- function(x, aspect_ratio, buffer_percent = 0) {
 }
 
 # Alternatively could be two separate functions: pretty_interval() and pretty_quantile()
-break_pretty2 <- function(data, n = 6, method = "quantile", FUN = signif, digits = NULL, threshold = 1/(n-1)/4) {
+break_pretty2 <- function(data, n = 6, method = "quantile", FUN = signif, 
+                          digits = NULL, threshold = 1/(n-1)/4) {
   divisions <- seq(from = 0, to = 1, length.out = n)
 
   if (method == "quantile") breaks <- unname(stats::quantile(data, divisions, na.rm = T))

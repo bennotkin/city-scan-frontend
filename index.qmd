@@ -35,6 +35,7 @@ city_string <- tolower(city) %>% stringr::str_replace_all(" ", "-")
 country <- city_params$country_name
 
 # Load map layer parameters
+layer_params_file <- 'source/layers.yml' # Also used by fns.R
 layer_params <- read_yaml('source/layers.yml')
 ```
 
