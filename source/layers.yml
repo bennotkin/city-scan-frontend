@@ -32,7 +32,8 @@ population:
   bins: 5
 # SECTION 4 ECONOMIC ACTIVITY
 rwi:
-  fuzzy_string: relative_wealth
+  fuzzy_string: rwi
+  data_variable: rwi
   title: 'Relative Wealth Index'
   palette: ['#ED431B', '#FF9169', '#FFFFBA', '#70C5AD', '#009E7A']
   group_id: 'relative-wealth-index'
@@ -89,6 +90,7 @@ intersections:
   palette: ['#ffffff', '#9F4830']
   group_id: intersection-density
 school_zones:
+  data_variable: thresh
   title: Travel distance to nearest school
   subtitle: Distance along road network in meters
   palette: ['#B6D053', '#B6D053AA', '#B6D05366']
@@ -107,6 +109,7 @@ school_points:
   factor: TRUE
   group_id: access-to-schools
 health_zones:
+  data_variable: thresh
   title: Travel distance to nearest health facility
   subtitle: Distance along road network
   # palette: ['#2B4C29', '#C5D4C1', '#B6D053']

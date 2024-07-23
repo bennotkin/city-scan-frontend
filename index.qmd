@@ -218,8 +218,8 @@ print_slide_text(slide_texts$demographics$population_density)
 #| include: false
 #| label: rwi
 # Read RWI
-# (Necessary to include ["rwi"] because shapefile has multiple layers)
-rwi <- fuzzy_read(spatial_dir, "rwi", FUN = vect)["rwi"]
+# (Don't need to include ["rwi"] because layers.yml includes data_variable)
+rwi <- fuzzy_read(spatial_dir, "rwi", FUN = vect)
 
 # Interactive Plot (Leaflet)
 add_rwi_layer <- create_layer_function(
@@ -447,7 +447,7 @@ health_1000 <- fuzzy_read(spatial_dir, "health_1000", FUN = vect)
 health_2000 <- fuzzy_read(spatial_dir, "health_2000", FUN = vect)
 health_3000 <- fuzzy_read(spatial_dir, "health_3000", FUN = vect)
 
-health_zones <- Reduce(rbind, c(health_1000, health_2000, health_3000)) %>% select(-level_1, -nodez)
+health_zones <- Reduce(rbind, c(health_1000, health_2000, health_3000))
 
 # Interactive Plot (Leaflet)
 add_health_zones_layer <- create_layer_function(
