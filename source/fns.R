@@ -24,17 +24,28 @@ librarian::stock(
 # Map Functions ----
 # Function for reading rasters with fuzzy names
 # Ideally, though, we would name in a consistent way where this is rendered unnecessary
-fuzzy_read <- function(spatial_dir, fuzzy_string, FUN = rast_as_vect, path = T, ...) {
-  file <- list.files(spatial_dir) %>% subset(str_detect(., fuzzy_string)) #%>%
+fuzzy_read <- function(dir, fuzzy_string, FUN = NULL, path = T, convert_to_vect = F, ...) {
+  file <- list.files(dir) %>% str_subset(fuzzy_string) #%>%
     #str_extract("^[^\\.]*") %>% unique()
-  if (length(file) > 1) warning(paste("Too many", fuzzy_string, "files in", spatial_dir))
-  if (length(file) < 1) warning(paste("No", fuzzy_string, "file in", spatial_dir))
+  if (length(file) > 1) warning(paste("Too many", fuzzy_string, "files in", dir))
+  if (length(file) < 1) {
+    file <- list.files(dir, recursive = T) %>% str_subset(fuzzy_string)
+    if (length(file) > 1) warning(paste("Too many", fuzzy_string, "files in", dir))
+    if (length(file) < 1) warning(paste("No", fuzzy_string, "file in", dir))
+  }
   if (length(file) == 1) {
+    if (is.null(FUN)) {
+      # print(tolower(str_sub(file, -4, -1)) == ".tif")
+      FUN <- if (tolower(str_sub(file, -4, -1)) == ".tif") rast else vect
+    }
     if (!path) {
-      content <- suppressMessages(FUN(spatial_dir, file, ...))
+      content <- suppressMessages(FUN(dir, file, ...))
     } else {
-      file_path <- paste_path(spatial_dir, file)
+      file_path <- file.path(dir, file)
       content <- suppressMessages(FUN(file_path, ...))
+    }
+    if (convert_to_vect && class(content)[1] %in% c("SpatRaster", "RasterLayer")) {
+      content <- rast_as_vect(content)
     }
     return(content)
   } else {
@@ -63,6 +74,7 @@ fuzzy_read <- function(spatial_dir, fuzzy_string, FUN = rast_as_vect, path = T, 
 # }
 
 rast_as_vect <- function(x, digits = 8, ...) {  
+  if (class(x) == "SpatVector") return(x)
   if (is.character(x)) x <- rast(x, ...)
   out <- as.polygons(x, digits = digits)
   return(out)
