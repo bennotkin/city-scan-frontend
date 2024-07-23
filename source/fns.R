@@ -295,16 +295,31 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
   }
   layer_values <- get_layer_values(data)
   palette <- params$palette
+  stroke_variable <- if (length(params$stroke) > 1) params$stroke$variable else NULL
+  weight_variable <- if (length(params$weight) > 1) params$weight$variable else NULL
 
-  layer <-
+  geom <-
     if (class(data)[1] == "SpatVector") {
       if (geomtype(data) == "points") {
         geom_spatvector(data = data, color = palette, size = 1)
       } else if (geomtype(data) == "polygons") {
         geom_spatvector(data = data, aes(fill = layer_values), color = params$stroke)
+      } else if (geomtype(data) == "lines") {
+        # I could use aes_list in a safer way
+        # aes_list2 <- c(
+        #   aes(color = .data[[stroke_variable]]))
+        #   aes(linewidth = (.data[[weight_variable]])))
+        aes_list <- aes(color = .data[[stroke_variable]], linewidth = (.data[[weight_variable]]))
+        if (is.null(weight_variable)) aes_list <- aes_list[-2]
+        if (is.null(stroke_variable)) aes_list <- aes_list[-1]
+        geom_spatvector(data = data, aes_list)
+      } else {
+        stop(paste(yaml_key, "data is a SpatVector but not of type 'points' or 'polygons'"))
       }
     } else if (class(data)[1] == "SpatRaster") {
       geom_spatraster(data = data)
+    } else {
+      stop(paste(yaml_key, "data is neither SpatVector nor SpatRaster"))
     }
 
   title_broken <- str_replace_all(params$title, "(.{20}[^\\s]*)\\s", "\\1<br>")
@@ -321,7 +336,7 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
   # if (str_detect(tolower(geometry_type), "point")) {
     # fill_scale <- NULL
     # } else {
-      fill_scale <-
+  fill_scale <- if (length(palette) == 0) NULL else {
         if (!is.null(params$factor) && params$factor) {
           scale_fill_manual(values = palette, na.value = "transparent", name = title)
         } else if (params$bins == 0) {
@@ -343,10 +358,19 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
               na.value = "transparent",
               oob = scales::oob_squish,
               name = title,
-              guide = if (diff(lengths(list(params$labels, params$breaks))) == 1) "legend" else guide_colorsteps()
-              )
-    # }
-  } 
+
+  color_scale <- if (length(params$stroke) < 2 || is.null(params$stroke$palette)) {
+    NULL
+  } else {
+    scale_color_stepsn(colors = params$stroke$palette)
+  }
+  linewidth_scale <- if (length(params$weight) < 2 || is.null(params$weight$range)) {
+    NULL
+  } else {
+    scale_linewidth(range = c(params$weight$range[[1]], params$weight$range[[2]]))
+  }
+
+  scales <- list(fill_scale, color_scale, linewidth_scale) %>% .[lengths(.) > 1]
 
   legend_text_alignment <- if (
       !is.null(params$labels) && is.character(params$labels)
@@ -356,7 +380,7 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
     legend.title = ggtext::element_markdown(),
     legend.text = element_text(hjust = legend_text_alignment))
 
-  return(list(layer = layer, scale = fill_scale, theme = theme))
+  return(list(geom = geom, scale = scales, theme = theme))
 }
 
 plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, plot_aoi = T, ...) {

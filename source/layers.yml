@@ -210,8 +210,9 @@ elevation: # how to indicate contours?
   subtitle: "Meters above sea level (MASL)"
   palette: ['#f5c4c0', '#762175']
   bins: 5
-  # fill: FALSE
-  stroke: '#000000'
+  stroke: 
+    variable: elev
+    palette: ['#f5c4c0', '#762175']
   weight: 1
   group_id: elevation
 slope:
@@ -242,7 +243,15 @@ liquefaction:
 road_network_criticality:
   title: Road network segment criticality
   subtitle: 'Criticality %'
-  palette: ['#C5D1E9', '#8696C8', '#516BAE', '#9C2F76', '#CE3737']
+  palette: NULL
+  stroke:
+    name: Road criticality
+    variable: edge_centr
+    palette: ['#C5D1E9', '#8696C8', '#516BAE', '#9C2F76', '#CE3737']
+  weight: 
+    name: Road type
+    variable: primary
+    range: [0.25, 1]
   suffix: "%"
   group_id: road-network-criticality
 burnable:
