@@ -342,7 +342,7 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
 
   theme <- theme(
     legend.title = ggtext::element_markdown(),
-    legend.text.align = legend_text_alignment)
+    legend.text = element_text(hjust = legend_text_alignment))
 
   return(list(layer = layer, scale = fill_scale, theme = theme))
 }
@@ -388,7 +388,9 @@ save_plot <- function(plot = NULL, filename, directory, rel_widths = c(3, 1)) {
   # Saves plots with set legend widths
   plot_layout <- plot_grid(
     plot + theme(legend.position = "none"),
-    get_legend(plot),
+    # Before ggplot2 3.5 was get_legend(plot); still works but with warning;
+    # there are now multiple guide-boxes
+    get_plot_component(plot, "guide-box-right"),
     rel_widths = rel_widths,
     nrow = 1
   )
