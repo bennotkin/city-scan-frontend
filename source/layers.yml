@@ -23,7 +23,7 @@ template:
   # resolution or resolution_factor
 # SECTION 3 DEMOGRAPHICS
 population:
-  fuzzy_string: population
+  fuzzy_string: population.*.tif$
   title: 'Population density'
   subtitle: 'Number of persons per 10,000 m^2^'
   palette: ['#ECEB72', '#8E3933']
@@ -39,13 +39,13 @@ rwi:
   group_id: 'relative-wealth-index'
   bins: 5
 economic_activity:
-  fuzzy_string: avg_rad_sum
+  fuzzy_string: avg_rad_sum.*.tif$
   title: 'Average nighttime light radiance'
   group_id: 'economic-hotspots'
   palette: ['#00a884', '#f0f0f0', '#e64c00']
   bins: 5
 economic_change:
-  fuzzy_string: linfit
+  fuzzy_string: linfit.tif$
   title: 'Rate of change in nighttime radiance'
   group_id: 'change-in-economic-hotspots'
   palette: ['#404040', '#bababa', '#FFFFFF', '#f4a582', '#ca0020']
@@ -58,7 +58,7 @@ social_distancing:
   group_id: social-distancing
 # SECTION 5 BUILT FORM
 wsf:
-  fuzzy_string: 'WSF.*4326'
+  fuzzy_string: wsf_4326.tif$
   title: 'Year of urban expansion'
   breaks: [1985, 1986, 1996, 2006, 2015]
   # labels: ['Before 1986', '1986', '1996', '2006', '2015']
@@ -69,14 +69,13 @@ wsf:
   # wsf_val[[city]] <- c('', 'Pre 1985', '1986-1995', '1996-2005', '2006-2015')
   # wsf_col[[city]] <- c('transparent', '#ffffbe', '#ffaa00', '#e60000', '#290800')
 impervious:
-  fuzzy_string:
   title: Impervious Surfaces
   min: 0
   max: 100
   suffix: '%'
   group_id: built-up-density
 land_cover:
-  fuzzy_string: landcover
+  fuzzy_string: lc.tif$
   title: 'Land Cover'
   group_id: 'land-cover'
   factor: TRUE
@@ -129,14 +128,14 @@ health_points:
   group_id: access-to-healthcare
 # SECTION 6 CLIMATE CONDITIONS
 solar:
-  fuzzy_string: solar
+  fuzzy_string: solar.*.tif$
   title: 'Photovoltaic Potential'
   subtitle: Power potential of a theoretical 1 kWp PV system (kWh)
   bins: 3
   palette: ['#ffebcc', '#f07605']
   group_id: solar-photovoltaic-potential
 air_quality:
-  fuzzy_string: air_quality
+  fuzzy_string: air.*.tif$
   title: 'Concentrations of PM2.5 particles in 2019'
   subtitle: 'Micrograms per cubic meter (µg/m<sup>3</sup>)'
   # domain: [0,200]
@@ -144,7 +143,7 @@ air_quality:
   breaks: [0, 5, 10, 15, 20, 30, 40, 50, 100]
   group_id: air-quality
 summer_lst:
-  fuzzy_string: Summer_LST
+  fuzzy_string: summer.*.tif$
   # palette: 'Spectral'
   palette: ['#5290C2', '#F0EE80', '#D33837']
   # domain: 'minmax'
@@ -153,7 +152,7 @@ summer_lst:
   suffix: '°C'
   group_id: summer-surface-temperature
 vegetation:
-  fuzzy_string: ndvi
+  fuzzy_string: NDVI_Annual.*.tif$
   title: Vegetated Areas
   subtitle: 'Normalized difference vegetation index (NDVI)'
   palette: ['#9999cc', '#f0f8d1', '#c2e3b8', '#87c27e', '#54a159', '#2e6a34']
@@ -162,17 +161,15 @@ vegetation:
   labels: ['Water (-1 to 0.015)', 'Built-up (0.015 to 0.14)', 'Barren (0.14 to 0.18)', 'Shrub and Grassland (0.18 to 0.27)', 'Sparse (0.27 to 0.36)', 'Dense (0.36 to 1)']
   group_id: vegetated-areas
 forest: # Requires preprocessing to combine forest and deforestation?
-  fuzzy_string: CurrentForest
+  fuzzy_string: ForestCover.*.tif$
   title: "Forest cover"
-  breaks: [0, 1]
-  # bins: 2
-  # center: .75
-  palette: ['transparent', '#8CC056']
-  labels: ['', 'Current Forest']
+  breaks: [1]
+  palette: ['#8CC056']
+  labels: ['Current Forest']
   factor: TRUE
   group_id: 'forests-deforestation'
 deforest: # Requires preprocessing to combine forest and deforestation?
-  fuzzy_string: Deforestation
+  fuzzy_string: Deforest.*.tif$
   title: Deforestation
   subtitle: Year of deforestation
   domain: [2001, 2021]
@@ -188,24 +185,31 @@ fluvial: # This will require pre-processing
   subtitle: 'Probability of a flood event within a 3-arc-second area in a given year'
   group_id: fluvial-flooding
 pluvial: # This will require pre-processing
+  factor: TRUE
   palette: ['#4465893f', '#4465897f', '#446589bf']
-  breaks: [0, 1, 10, 11]
+  breaks: [1, 10, 100]
   labels: ['0.1–1%', '1–10%', '>10%']
   title: 'Pluvial flood probability'
   subtitle: 'Probability of a flood event within a 3-arc-second area in a given year'
   group_id: pluvial-flooding
-flooding_combined: # This will require pre-processing
+coastal:
   factor: TRUE
   palette: ['#4465893f', '#4465897f', '#446589bf']
   breaks: [1, 10, 11]  
   labels: ['0.1–1%', '1–10%', '>10%']
+  title: 'Coastal flood probability'
+  subtitle: 'Probability of a flood event within a 3-arc-second area in a given year'
+  group_id: coastal-flooding
+flooding_combined: # This will require pre-processing
+  factor: TRUE
+  palette: ['#4465893f', '#4465897f', '#446589bf']
+  breaks: [1, 10, 100]
+  labels: ['0.1–1%', '1–10%', '>10%']
   title: 'Flood probability'
   subtitle: 'Probability of a flood event within a 3-arc-second area in a given year'
   group_id: combined-fluvial-pluvial-flooding
-sea_level_rise: NULL
-coastal_erosion: NULL
 elevation: # how to indicate contours?
-  fuzzy_string: elevation
+  fuzzy_string: contour.shp$
   title: Elevation
   subtitle: "Meters above sea level (MASL)"
   palette: ['#f5c4c0', '#762175']
@@ -216,6 +220,7 @@ elevation: # how to indicate contours?
   weight: 1
   group_id: elevation
 slope:
+  fuzzy_string: slope.tif$
   title: Slope
   subtitle: 'Angle of hillside in degrees'
   breaks: [0, 2, 5, 10, 20, 90]
@@ -225,7 +230,7 @@ slope:
   suffix: '°'
   group_id: slope
 landslides:
-  fuzzy_string: landslides
+  fuzzy_string: landslide.*.tif$
   title: Landslide susceptibility
   factor: TRUE
   palette: ['#FCEFE2', '#F2C08C', '#E89251', '#D66136', '#993F2B']
@@ -233,7 +238,7 @@ landslides:
   breaks: [0, 1, 2, 3, 4]
   group_id: landslides
 liquefaction:
-  fuzzy_string: landslides
+  fuzzy_string: liquefaction.tif$
   title: Liquefaction susceptibility
   factor: TRUE
   palette: ['#FCEFE2', '#F2C08C', '#E89251', '#D66136', '#993F2B']
@@ -255,13 +260,13 @@ road_network_criticality:
   suffix: "%"
   group_id: road-network-criticality
 burnable:
-  fuzzy_string: burnable
-  title: Burnable Area
+  fuzzy_string: lc_burn.*.tif$
+  title: Burnability Factor
   palette: ['#FFFFFF', '#5C1316']
   breaks: [0, .2, .4, .6, .8, 1]
   group_id: burnable-area
 moisture:
-  fuzzy_string: NDMI_Annual
+  fuzzy_string: NDMI_Annual.*.tif$
   title: NDMI
   palette: ['#D45A35', '#F6F7F9', '#48A787']
   center: 0
