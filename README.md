@@ -9,28 +9,28 @@ This directory includes both the files for creating a scan (and a template for o
 ## Table of Contents <!-- omit in toc -->
 - [The lay of the land…](#the-lay-of-the-land)
 - [Making changes](#making-changes)
-	- [`index.qmd`](#indexqmd)
-		- [Structure](#structure)
-		- [Creating the map layer](#creating-the-map-layer)
-		- [Printing the text](#printing-the-text)
-	- [`layers.yml`](#layersyml)
-		- [Parameters](#parameters)
-	- [`generic-text.yml`](#generic-textyml)
-	- [`manual-text.md`](#manual-textmd)
+  - [`index.qmd`](#indexqmd)
+    - [Structure](#structure)
+    - [Creating the map layer](#creating-the-map-layer)
+    - [Printing the text](#printing-the-text)
+  - [`layers.yml`](#layersyml)
+    - [Parameters](#parameters)
+  - [`generic-text.yml`](#generic-textyml)
+  - [`manual-text.md`](#manual-textmd)
 - [Docker \& Google Cloud](#docker--google-cloud)
-	- [Using Google Cloud](#using-google-cloud)
-	- [Directory Contents](#directory-contents)
-		- [Files for rendering the document](#files-for-rendering-the-document)
-		- [Files for building the container](#files-for-building-the-container)
-	- [Running locally](#running-locally)
-	- [Setting up on Google Cloud](#setting-up-on-google-cloud)
-		- [Set environment variables](#set-environment-variables)
-		- [Google Cloud Storage](#google-cloud-storage)
-		- [Service account](#service-account)
-		- [Build the container](#build-the-container)
-			- [Building container locally](#building-container-locally)
-		- [Job creation and execution](#job-creation-and-execution)
-			- [Running container locally](#running-container-locally)
+  - [Using Google Cloud](#using-google-cloud)
+  - [Directory Contents](#directory-contents)
+    - [Files for rendering the document](#files-for-rendering-the-document)
+    - [Files for building the container](#files-for-building-the-container)
+  - [Running locally](#running-locally)
+  - [Setting up on Google Cloud](#setting-up-on-google-cloud)
+    - [Set environment variables](#set-environment-variables)
+    - [Google Cloud Storage](#google-cloud-storage)
+    - [Service account](#service-account)
+    - [Build the container](#build-the-container)
+      - [Building container locally](#building-container-locally)
+    - [Job creation and execution](#job-creation-and-execution)
+      - [Running container locally](#running-container-locally)
 
 ## The lay of the land…
 
@@ -305,8 +305,8 @@ REPO=cloud-run-source-deploy
 BUCKET=crp-city-scan
 IMAGE=nalgene
 JOB=frontend
-CITY=kenya-mombasa
-MONTH=2023-10
+CITY=armenia-goris
+MONTH=2023-12
 # The city directory is the directory within the mount directory for the specific city
 CITY_DIR=$MONTH-$CITY
 ```

@@ -9,4 +9,6 @@
 source("pre-render/write-population.R")
 
 # Generate plots
-source('pre-render/plots.R')
+# source('pre-render/plots.R')
+
+# Amend maps

@@ -111,4 +111,3 @@ pop_longitude <- pop_longitude %>%
   ungroup() %>%
   distinct(Location, Year, Population, .keep_all = T)
 readr::write_csv(pop_longitude, file.path(process_output_dir, "population.csv"))
-
