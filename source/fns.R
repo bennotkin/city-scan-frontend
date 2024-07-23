@@ -387,11 +387,16 @@ create_static_layer <- function(data, yaml_key = NULL, params = NULL, ...) {
   return(list(geom = geom, scale = scales, theme = theme))
 }
 
-plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, plot_aoi = T, ...) {
+plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, plot_aoi = T, aoi_only = F, ...) {
+  if (aoi_only) {
+    layer <- NULL
+  } else { 
   params <- prepare_parameters(yaml_key = yaml_key, ...)
   layer <- create_static_layer(data, params = params)
+  }
   # baseplot <- if (is.null(baseplot)) ggplot() + tiles else baseplot + ggnewscale::new_scale_fill()
   # This  method sets the plot CRS to 4326, but this requires reprojecting the tiles
+  ## I am now returning the CRS to 3857. I don't think this is a global fix, because it causes reprojections of the rasters
   baseplot <- if (is.null(baseplot)) {
     ggplot() +
         geom_sf(data = static_map_bounds, fill = NA, color = NA) +
@@ -400,10 +405,6 @@ plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, plot_a
   } else { baseplot + ggnewscale::new_scale_fill() }
   p <- baseplot +
         layer + 
-        coord_sf(
-          expand = F,
-          xlim = st_bbox(static_map_bounds)[c(1,3)],
-          ylim = st_bbox(static_map_bounds)[c(2,4)]) +
         annotation_north_arrow(style = north_arrow_minimal, location = "br", height = unit(1, "cm")) +
         annotation_scale(style = "ticks", aes(unit_category = "metric", width_hint = 0.33), height = unit(0.25, "cm")) +        
         theme(
@@ -415,11 +416,14 @@ plot_static <- function(data, yaml_key, filename = NULL, baseplot = NULL, plot_a
           axis.ticks = element_blank(),
           axis.ticks.length = unit(0, "pt"),
           plot.margin = margin(0,0,0,0))
-  if (plot_aoi) p <- p + geom_sf(data = aoi, fill = NA, linetype = "dashed", linewidth = .5) + 
-        coord_sf(
+  if (plot_aoi) p <- p + geom_sf(data = aoi, fill = NA, linetype = "dashed", linewidth = .5) #+ 
+  # # There may be issues caused by this, but excluding this causes the tiles to be reprojected, which can cause darkening
+  bbox_3857 <- st_bbox(st_transform(static_map_bounds, crs = "epsg:3857"))
+  p <- p + coord_sf(
+              crs = "epsg:3857",
           expand = F,
-          xlim = st_bbox(static_map_bounds)[c(1,3)],
-          ylim = st_bbox(static_map_bounds)[c(2,4)])
+              xlim = bbox_3857[c(1,3)],
+              ylim = bbox_3857[c(2,4)])
   if (!is.null(filename)) save_plot(filename = filename, plot = p, directory = styled_maps_dir)
   return(p)
 }
